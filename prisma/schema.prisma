@@ -1,0 +1,178 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  name             String
+  password         String
+  provider         String? // πάροχος που κάνει το login
+  role             String         @default("user") // εδώ προσθέτουμε το role 
+  providerId       String? // Id απο τον πάροχο
+  orders           Order[] // Σχέση με το μοντελο Οrder
+  sentMessages     ChatMessage[]  @relation("SentMessages")
+  receivedMessages ChatMessage[]  @relation("ReceivedMessages") // Σχέση με το μοντελο ChatMessage
+  wishList         WishListItem[] // Σχέση με το μοντέλο WishListItem
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  cart Cart[]
+
+  Review Review[]
+}
+
+model Product {
+  id          String           @id @default(uuid()) // unique identifier of the product 
+  name        String
+  description String
+  price       Float // price of the product 
+  category    String // Category of the product
+  variants    ProductVariant[]  @relation("ProductVariants")// Σχέση με το μοντέλο productVariant
+  images      ProductImage[]  @relation("ProductImages") // Σχέση με το μοντέλο ProductImage
+  reviews     Review[]  @relation("ProductReviews") // Σχέση με το μοντέλο Review
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  wishListItems WishListItem[] // Σχέση με το μοντέλο WishListItem
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  url       String // store the image URL or the path 
+  product   Product  @relation("ProductImages", fields: [productId], references: [id])
+  productId String
+}
+
+model ProductVariant {
+  id        String     @id @default(uuid())
+  sku       String     @unique // unique identifier for the variant
+  size      Size       @relation(fields: [sizeId], references: [id])
+  sizeId    String
+  color     Color      @relation(fields: [colorId], references: [id])
+  colorId   String
+  stock     Int // απόθεμα του variant
+  price     Float? // τιμή του variant optional
+  product   Product    @relation("ProductVariants", fields: [productId], references: [id])
+  orderItems OrderItem[] @relation("VariantOrderItems")
+  productId String
+  cartItems CartItem[] // Σχέση με το μοντέλο CartItem
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
+  items     CartItem[] // Σχέση με το μοντέλο CartItem
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String         @id @default(uuid())
+  cart      Cart           @relation(fields: [cartId], references: [id])
+  cartId    String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variantId String
+  quantity  Int
+}
+
+model WishListItem {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt DateTime @default(now())
+}
+
+model Size {
+  id   String @id @default(uuid())
+  name String @unique // ξεχωριστο identifier για το size π.χ S, M , L , Xl
+
+  productVariants ProductVariant[]
+}
+
+model Color {
+  id      String @id @default(uuid())
+  name    String @unique
+  hexCode String // προαιρετικός δεκαεξαδικός κωδικός χρώματος
+
+  productVariants ProductVariant[]
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation("ProductReviews",fields: [productId], references: [id])
+  productId String
+  rating    Int      @default(1) // βαθμολογία του προϊόντος
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+enum orderStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id            String      @id @default(uuid()) //generated unique identifier for the order
+  orderNumber   String      @unique
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  paymentMethod String
+  totalAmount   Float
+  status        orderStatus @default(PENDING) // enum για την κατάσταση της παραγγελίας
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  variant   ProductVariant @relation("VariantOrderItems", fields: [variantId], references: [id])
+  variantId String
+  quantity  Int
+  price     Float
+}
+
+// check to ensure that the message type is video image or text
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+}
+
+model ChatMessage {
+  id         String      @id @default(uuid())
+  roomId     String
+  senderId   String
+  sender     User        @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String? // optional για direct messages
+  receiver   User?       @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  message    String
+  type       MessageType @default(TEXT) // text, image, video
+  isRead     Boolean     @default(false)
+  timestamp  DateTime    @default(now())
+  deletedAt  DateTime? // optional για να κρατάμε το timestamp του διαγραμμένου μηνύματος
+  editedAt   DateTime? // optional για να κάνει ο χρήστης edit το μήνυμα
+}
