@@ -1,3 +1,37 @@
+# E-commerce Backend
+
+A full-featured e-commerce backend built with NestJS, Prisma, and MySQL.
+
+## Features
+- User Authentication & Authorization
+- Product Management
+- Shopping Cart
+- Order Processing
+- Payment Integration
+- Real-time Chat
+- Product Recommendations
+- Search Functionality
+
+## Tech Stack
+- NestJS
+- Prisma ORM
+- MySQL
+- TypeScript
+- JWT Authentication
+
+## Setup
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables
+4. Run migrations: `npx prisma migrate dev`
+5. Start the server: `npm run start:dev`
+
+## API Documentation
+[Add your API documentation here]
+
+## Testing
+Run tests with: `npm test`
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
