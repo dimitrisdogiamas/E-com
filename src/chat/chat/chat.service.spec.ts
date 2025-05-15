@@ -231,7 +231,7 @@ describe('ChatService', () => {
         },
         {
           id: '2',
-          roomId: 'room1',
+          roomId: 'room2', // εδώ έπαιρνε 2 φορές το room1
           senderId: 'user2',
           receiverId: 'user1',
           message: 'Hi',
@@ -250,7 +250,10 @@ describe('ChatService', () => {
       const result = await service.getUserConversations('user1');
 
       expect(prisma.chatMessage.findMany).toHaveBeenCalledWith({
-        by: ['roomId'],
+        distinct: ['roomId'],
+        orderBy: {
+          timestamp: 'desc',
+        },
         where: {
           OR: [
             { senderId: 'user1' },
@@ -259,9 +262,6 @@ describe('ChatService', () => {
             },
           ],
           deletedAt: null,
-        },
-        orderBy: {
-          timestamp: 'asc',
         },
         select: {
           roomId: true,
