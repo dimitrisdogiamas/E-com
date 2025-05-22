@@ -1,40 +1,69 @@
 'use client';
-import { useCartStore } from "../components/cart/cartStore";
+import { useEffect, useState } from 'react';
+import { getAllProducts } from '@/app/services/productService';
+import Grid from '@mui/material/Grid';
+import { Container,  Card, CardContent, Typography, CircularProgress, Alert } from '@mui/material';
 import Link from 'next/link';
-export default function ProductsPage() {
-  
-  const products = [
-    { id: 1, name: 'T-shirt', price: 19.99 },
-    { id: 2, name: 'Jeans', price: 49.99 },
-    {id: 3, name: 'Sneakers', price: 59.99 },
-  ];
 
-  const { addItem } = useCartStore();
-  // Dummy data for products
+
+
+type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+}
+
+export default function ProductsPage() {
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // fetch the data from the getallproducts function
+
+  useEffect(() => {
+    getAllProducts()
+      .then(setProducts)
+      .catch(() => setError('Failed to load products'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <Container sx={{ mt: 4 }}><CircularProgress /></Container>
+  if (error) return <Container sx={{ mt: 4 }}><Alert severity="error">{error}</Alert></Container>
+
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">Products</h1>
-      <div className="mb-6">
-        <Link href="/cart" className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-700">
-        Go to Checkout
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Products
+      </Typography>
+      <Grid container spacing={2}>
         {products.map((product) => (
-          <div key={product.id} className="bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold">{product.name}</h2>
-            <p className="text-gray-700">${product.price.toFixed(2)}</p>
-            <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-              View Details
-            </button>
-            <button 
-              onClick={() => addItem({ ...product, quantity: 1 })}
-              className="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2">
-              Add to Cart
-            </button>
-          </div>
+        <Grid item xs={12} sm={6} md={4} key={product.id} >
+          <Card>
+            <CardContent>
+              <Typography variant="h6" component="h2">
+                  <Link href={`/products/${product.id}`}>
+                    {product.name}
+                  </Link>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {product.category}
+              </Typography>
+              <Typography>
+                {product.description}
+              </Typography>
+              <Typography variant="subtitle1" color="primary">
+                {product.price} $
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid >
         ))}
-      </div>
-    </div>
-  );
+      </Grid>
+    </Container>
+  )
+ 
 }

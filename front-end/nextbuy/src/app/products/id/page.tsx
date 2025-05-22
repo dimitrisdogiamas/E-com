@@ -1,22 +1,131 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { getProductById } from '@/app/services/productService';
+import {
+  Container, Card, CardContent, Typography,
+  CircularProgress, Alert, Button, Grid,
+  IconButton, Snackbar, Box
+} from '@mui/material';
+import { useCartStore } from '@/app/components/cart/cartStore';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
+type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+};
 
+export default function ProductDetailsPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
 
-export default function ProductDetailsPage({ params }: { params: { id: string } }) {
+  useEffect(() => {
+    getProductById(id)
+      .then(setProduct)
+      .catch(() => setError('Failed to load product'))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  const { id } = params
+  const handleQuantityChange = (change: number) => {
+    setQuantity(prev => Math.max(1, prev + change));
+  };
 
-  //Dummy data
-  const product = { id, name: 'T-Shirt', price: 19.99, description: 'A comfortable t-shirt made of 100% cotton.' };
+  const handleAddToCart = () => {
+    if (product) {
+      addItem({
+        ...product,
+        id: Number(product.id),
+        quantity
+      });
+      setShowSnackbar(true);
+    }
+  };
 
+  if (loading) return <Container sx={{ mt: 4 }}><CircularProgress /></Container>
+  if (error) return <Container sx={{ mt: 4 }}><Alert severity="error">{error}</Alert></Container>
+  if (!product) return null;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-      <p className="text-gray-700 mb-4">${product.price.toFixed(2)}</p>
-      <p className="text-gray-600">{product.description}</p>
-      <button className="mt-4 bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-        Add to Cart
-      </button>
-    </div>
-  )
+    <Container sx={{ mt: 4 }}>
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h4" component="h1" gutterBottom>
+                {product.name}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                Category: {product.category}
+              </Typography>
+              <Typography variant="body2" paragraph>
+                {product.description}
+              </Typography>
+              <Typography variant="h5" color="primary" gutterBottom>
+                ${product.price.toFixed(2)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Add to Cart
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <IconButton onClick={() => handleQuantityChange(-1)}>
+                  <RemoveIcon />
+                </IconButton>
+                <Typography sx={{ mx: 2 }}>{quantity}</Typography>
+                <IconButton onClick={() => handleQuantityChange(1)}>
+                  <AddIcon />
+                </IconButton>
+              </Box>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<ShoppingCartIcon />}
+                onClick={handleAddToCart}
+                fullWidth
+                size="large"
+              >
+                Add to Cart
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => router.push('/products')}
+                fullWidth
+                sx={{ mt: 2 }}
+              >
+                Continue Shopping
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSnackbar(false)}
+        message="Product added to cart"
+        action={
+          <Button color="secondary" size="small" onClick={() => router.push('/cart')}>
+            View Cart
+          </Button>
+        }
+      />
+    </Container>
+  );
 }

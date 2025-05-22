@@ -1,17 +1,31 @@
 import { Box, Typography, TextField, Button } from '@mui/material';
-import React from 'react';
-
+import { login } from '@/app/services/authService';
+import { useState } from "react";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Email:', email);
-    console.log('Password:', password);
+    setLoading(true);
+    setError('');
 
-    // backend connection logic here 
+    // backend connection logic here handle the error and the success
+    try {
+      const res = await login(email, password)
+      
+      // θα αποθηκεύουμε το token στο local storage
+      localStorage.setItem('token', res.token);
+      //redirect to the home page
+      window.location.href="/"
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   }
   return (
     <Box

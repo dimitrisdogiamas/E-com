@@ -1,51 +1,87 @@
 'use client'
 
-import { useState } from 'react'
-import axios from 'axios'
+import { useState } from 'react';
+import { TextField, Button, Container, Typography, Box, Alert } from '@mui/material';
+
+import { register } from '@/app/services/authService';
 
 export default function RegisterPage() {
   // we need to define three states for the form 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
     try {
-     await axios.post('http://localhost:4000/auth/register', { email, password });
-      alert('Registration successful! You can now log in.');
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data.message || 'An error occured');
+      await register(email, password, name); // this is a callbacke function to the register
+      window.location.href="/auth/login"
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error && 
+        typeof (error as {response?: {data?: {message?: string}} }).response?.data?.message === 'string'
+      ) {
+        setError((error as { response: {data: {message: string}}}).response.data.message);
       } else {
         setError('An error occured');
       }
+    } finally {
+      setLoading(false);
     }
   }
   return (
-    <div className="">
-      <h1 className="text-4xl font-bold mb-4">Register</h1>
-      {error && <p className="text-red-500">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounder"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-          required
-        />
-        <button className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Register</button>
-      </form>
-    </div>
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 8 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Register
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Name"
+            type="email"
+            fullWidth
+            margin="normal"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Name"
+            type="name"
+            fullWidth
+            margin="normal"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            margin="normal"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? 'Registering...' : 'Register'}
+          </Button>
+          {error && <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>}
+        </form>
+      </Box>
+    </Container>
   )
 }
