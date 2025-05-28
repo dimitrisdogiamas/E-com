@@ -3,12 +3,12 @@
 // θα φτίαξουμε το authContext για να έχουμε global state για το auth
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types/user';
-
+import { login as loginService } from '../services/authService';
 // ορίζουμε τον τύπο του authContext
 type AuthContextType = {
   user: User | null;
   token: string | null;
-  login: (token: string, user: User) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -31,18 +31,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   // login function 
-  const login = (token: string, user: User) => {
-    setToken(token);
-    setUser(user);
-
-    localStorage.setItem('token', token);
+  const login = async(email: string, password: string) => {
+    const data = await loginService(email, password) // we await the login service
+    setToken(data.token);
+    setUser(data.user);
+ // we store the token and the user in local storage
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
   };
 
-
+  // logout function
   const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 
   return (

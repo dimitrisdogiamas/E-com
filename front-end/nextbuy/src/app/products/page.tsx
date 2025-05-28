@@ -2,10 +2,14 @@
 import { useEffect, useState } from 'react';
 import { getAllProducts } from '@/app/services/productService';
 import Grid from '@mui/material/Grid';
-import { Container,  Card, CardContent, Typography, CircularProgress, Alert } from '@mui/material';
+import { Container, Card, CardContent, CardMedia, Typography, CircularProgress, Alert } from '@mui/material';
 import Link from 'next/link';
 
-
+type ProductImage = {
+  id: string;
+  url: string;
+  productId: string;
+};
 
 type Product = {
   id: string;
@@ -13,6 +17,7 @@ type Product = {
   description: string;
   price: number;
   category: string;
+  images: ProductImage[];// add image url to the product
 }
 
 export default function ProductsPage() {
@@ -42,21 +47,33 @@ export default function ProductsPage() {
       <Grid container spacing={2}>
         {products.map((product) => (
         <Grid item xs={12} sm={6} md={4} key={product.id} >
-          <Card>
-            <CardContent>
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {product.images && product.images.length > 0 && (
+              <CardMedia
+                component="img"
+                height="250"
+                image={product.images[0].url}
+                alt={product.name}
+                sx={{ objectFit: 'cover' }}
+              />
+            )}
+            <CardContent sx={{ flexGrow: 1 }}>
               <Typography variant="h6" component="h2">
-                  <Link href={`/products/${product.id}`}>
+                  <Link 
+                    href={`/products/${product.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
                     {product.name}
                   </Link>
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {product.category}
               </Typography>
-              <Typography>
+              <Typography variant="body2" sx={{ mt: 1 }}>
                 {product.description}
               </Typography>
-              <Typography variant="subtitle1" color="primary">
-                {product.price} $
+              <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
+                ${product.price}
               </Typography>
             </CardContent>
           </Card>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from "react";
-import { login } from "@/app/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
 
 
@@ -20,10 +19,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const data = await login(email, password);
+      
       // αποθηκεόυμε το context γιατί μας δίνει την δυνατότητα 
       // για global state και protected routes
-      loginContext(data.token, data.user);
+      await loginContext(email, password); // we await the login context from the auth context
       window.location.href = '/';
 
     } catch (error) {

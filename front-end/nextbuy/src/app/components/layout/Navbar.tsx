@@ -67,6 +67,9 @@ export default function Navbar() {
           </IconButton>
           {user ? (
             <>
+              <Typography variant="body1" sx={{ mx: 1 }}>
+                Hello {user.name || user.email} welcome to NextBuy! 
+              </Typography>
               <IconButton 
                 color="inherit" 
                 component={Link} 
@@ -92,6 +95,7 @@ export default function Navbar() {
               </IconButton>
             </>
           ) : (
+              <>
             <IconButton 
               color="inherit" 
               component={Link} 
@@ -103,7 +107,20 @@ export default function Navbar() {
               }}
             >
               <LoginIcon />
-            </IconButton>
+                </IconButton>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  href="/auth/register"
+                  sx={{
+                    '&hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  }}
+                >
+                  Register
+                </Button>
+                </>
           )}
         </Box>
       </Toolbar>
