@@ -2,7 +2,7 @@
 import { LoginResponse } from '../types/auth';
 import axios from 'axios';
 // setting the api url
-const API_URL = 'http://localhost:4000';
+const API_URL = 'http://localhost:4001';
 
 export async function login(email: string, password: string) {
   const res = await axios.post<LoginResponse>(`${API_URL}/auth/login`, { email, password })

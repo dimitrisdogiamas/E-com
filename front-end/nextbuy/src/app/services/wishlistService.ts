@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4000';
+const API_URL = 'http://localhost:4001';
 
 export interface WishlistItem {
   id: string;

@@ -1,26 +1,41 @@
 'use client'
 
 import { useState } from 'react';
-import { TextField, Button, Container, Typography, Box, Alert } from '@mui/material';
-
+import { 
+  TextField, 
+  Button, 
+  Container, 
+  Typography, 
+  Box, 
+  Alert, 
+  Paper,
+  CircularProgress,
+  Link as MuiLink
+} from '@mui/material';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { register } from '@/app/services/authService';
 
 export default function RegisterPage() {
-  // we need to define three states for the form 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    
     try {
-      await register(email, password, name); // this is a callbacke function to the register
-      window.location.href="/auth/login"
+      await register(email, password, name);
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 2000);
     } catch (error: unknown) {
       if (
         error &&
@@ -30,35 +45,64 @@ export default function RegisterPage() {
       ) {
         setError((error as { response: {data: {message: string}}}).response.data.message);
       } else {
-        setError('An error occured');
+        setError('An error occurred during registration');
       }
     } finally {
       setLoading(false);
     }
   }
+
+  if (success) {
+    return (
+      <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
+          <Typography variant="h5" color="success.main" gutterBottom>
+            Registration Successful!
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Redirecting to login page...
+          </Typography>
+        </Paper>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Register
-        </Typography>
-        <form onSubmit={handleSubmit}>
+    <Container maxWidth="sm" sx={{ py: 8 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+            Create Account
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Join NextBuy and start shopping today
+          </Typography>
+        </Box>
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <TextField
-            label="Name"
+            label="Full Name"
+            type="text"
+            fullWidth
+            margin="normal"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            autoComplete="name"
+            autoFocus
+          />
+          
+          <TextField
+            label="Email Address"
             type="email"
             fullWidth
             margin="normal"
             value={email}
             onChange={e => setEmail(e.target.value)}
+            required
+            autoComplete="email"
           />
-          <TextField
-            label="Name"
-            type="name"
-            fullWidth
-            margin="normal"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
+          
           <TextField
             label="Password"
             type="password"
@@ -66,22 +110,40 @@ export default function RegisterPage() {
             margin="normal"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            helperText="Password must be at least 6 characters"
           />
+
+          {error && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {error}
+            </Alert>
+          )}
+
           <Button
             type="submit"
             variant="contained"
             color="primary"
             fullWidth
             disabled={loading}
-            sx={{ mt: 2 }}
+            sx={{ mt: 3, mb: 2, py: 1.5 }}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? <CircularProgress size={24} /> : 'Create Account'}
           </Button>
-          {error && <Alert severity="error" sx={{ mt: 2 }}>
-            {error}
-          </Alert>}
-        </form>
-      </Box>
+
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Typography variant="body2">
+              Already have an account?{' '}
+              <Link href="/auth/login" passHref>
+                <MuiLink component="span" sx={{ cursor: 'pointer' }}>
+                  Sign in here
+                </MuiLink>
+              </Link>
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
     </Container>
-  )
+  );
 }

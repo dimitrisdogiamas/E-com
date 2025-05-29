@@ -25,25 +25,25 @@ export default function WishlistPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const loadWishlist = async () => {
+      try {
+        if (!token) return;
+        const items = await getWishlist(token);
+        setWishlistItems(items);
+      } catch (error) {
+        setError('Failed to load wishlist');
+        console.error('Wishlist error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (user && token) {
       loadWishlist();
     } else {
       setLoading(false);
     }
   }, [user, token]);
-
-  const loadWishlist = async () => {
-    try {
-      if (!token) return;
-      const items = await getWishlist(token);
-      setWishlistItems(items);
-    } catch (error) {
-      setError('Failed to load wishlist');
-      console.error('Wishlist error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleRemoveFromWishlist = async (productId: string) => {
     try {

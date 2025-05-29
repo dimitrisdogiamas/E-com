@@ -1,4 +1,4 @@
-import { Box, Typography, TextField, Button } from '@mui/material';
+import { Box, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { login } from '@/app/services/authService';
 import { useState } from "react";
 
@@ -21,12 +21,14 @@ const LoginForm: React.FC = () => {
       localStorage.setItem('token', res.token);
       //redirect to the home page
       window.location.href="/"
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Login failed');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   }
+  
   return (
     <Box
       sx={{
@@ -41,6 +43,7 @@ const LoginForm: React.FC = () => {
       }}
     >
       <Typography variant='h4' align='center'>Login</Typography>
+      {error && <Alert severity="error">{error}</Alert>}
       <form onSubmit={handleSubmit}>
         <TextField
           label='Email'
@@ -49,18 +52,26 @@ const LoginForm: React.FC = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          sx={{ mb: 2 }}
         />
-        <TextField label='Password' type='password' fullWidth required />
+        <TextField 
+          label='Password' 
+          type='password' 
+          fullWidth 
+          required 
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          sx={{ mb: 2 }}
+        />
         <Button
           type='submit'
           variant='contained'
           color='primary'
           fullWidth
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
           sx={{ marginTop: 2 }}
         >
-          Login
+          {loading ? <CircularProgress size={24} /> : 'Login'}
         </Button>
       </form>
     </Box>
