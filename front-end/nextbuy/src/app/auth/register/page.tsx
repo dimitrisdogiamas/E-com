@@ -76,7 +76,7 @@ export default function RegisterPage() {
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Join NextBuy and start shopping today
-          </Typography>
+        </Typography>
         </Box>
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
               </Link>
             </Typography>
           </Box>
-        </Box>
+      </Box>
       </Paper>
     </Container>
   );

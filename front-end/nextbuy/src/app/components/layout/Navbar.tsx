@@ -7,6 +7,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import { useAuth } from '@/app/context/AuthContext';
 
 export default function Navbar() {
@@ -51,6 +52,20 @@ export default function Navbar() {
           >
             Products
           </Button>
+          {user && (
+            <Button 
+              color="inherit" 
+              component={Link} 
+              href="/wishlist"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              Wishlist
+            </Button>
+          )}
           <IconButton 
             color="inherit" 
             component={Link} 
@@ -68,8 +83,21 @@ export default function Navbar() {
           {user ? (
             <>
               <Typography variant="body1" sx={{ mx: 1 }}>
-                Hello {user.name || user.email} welcome to NextBuy! 
+                Hello {user.name || user.email}!
               </Typography>
+              <IconButton 
+                color="inherit" 
+                component={Link} 
+                href="/orders"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+                title="My Orders"
+              >
+                <ReceiptIcon />
+              </IconButton>
               <IconButton 
                 color="inherit" 
                 component={Link} 
@@ -79,6 +107,7 @@ export default function Navbar() {
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   },
                 }}
+                title="My Profile"
               >
                 <PersonIcon />
               </IconButton>
@@ -90,6 +119,7 @@ export default function Navbar() {
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   },
                 }}
+                title="Logout"
               >
                 <LogoutIcon />
               </IconButton>
@@ -113,7 +143,7 @@ export default function Navbar() {
                   component={Link}
                   href="/auth/register"
                   sx={{
-                    '&hover': {
+                    '&:hover': {
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   },
                   }}

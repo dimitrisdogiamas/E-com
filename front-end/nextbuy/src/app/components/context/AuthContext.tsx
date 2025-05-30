@@ -2,8 +2,8 @@
 
 // θα φτίαξουμε το authContext για να έχουμε global state για το auth
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types/user';
-import { login as loginService } from '../services/authService';
+import { User } from '../../types/user';
+import { login as loginService } from '../../services/authService';
 // ορίζουμε τον τύπο του authContext
 type AuthContextType = {
   user: User | null;

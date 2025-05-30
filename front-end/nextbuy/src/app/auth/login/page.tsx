@@ -59,21 +59,21 @@ export default function LoginPage() {
           <TextField
             fullWidth
             label="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)} 
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
             margin="normal"
             required
             autoComplete="email"
             autoFocus
-          />
+        />
           
           <TextField
             fullWidth
             label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
             margin="normal"
             required
             autoComplete="current-password"
