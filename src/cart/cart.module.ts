@@ -1,4 +1,11 @@
 import { Module } from '@nestjs/common';
+import { WishlistController } from './wishlist/wishlist.controller';
+import { WishlistService } from './wishlist/wishlist.service';
+import { PrismaModule } from '../prisma/prisma.module';
 
-@Module({})
+@Module({
+  imports: [PrismaModule],
+  controllers: [WishlistController],
+  providers: [WishlistService],
+})
 export class CartModule {}

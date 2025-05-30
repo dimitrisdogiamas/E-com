@@ -4,22 +4,34 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
   @Post('login')
-  async login(@Body() body: { email: string; password: string }) {
-    if (!body.email || !body.password) {
-      throw new Error('Email and password are required');
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  async login(@Body() loginDto: LoginDto) {
+    try {
+      return this.authService.login(loginDto.email, loginDto.password);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
     }
-    return this.authService.login(body.email, body.password);
   }
+
   @Post('register')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+    try {
+      return this.authService.register(registerDto);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

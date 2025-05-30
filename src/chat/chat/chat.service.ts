@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MessageType } from '@prisma/client';
+
 @Injectable()
 export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
@@ -10,7 +12,7 @@ export class ChatService {
     message: string,
     timestamp: string,
     receiverId: string,
-    type: string,
+    type: MessageType,
   ) {
     const savedMessage = await this.prisma.chatMessage.create({
       data: {

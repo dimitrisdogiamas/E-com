@@ -17,13 +17,36 @@ export class ProductService {
   }
 
   async getAllProducts() {
-    return this.prisma.product.findMany();
+    return this.prisma.product.findMany({
+      include: {
+        images: true, // we include the images in the product
+      },
+    });
   }
 
   //getProductById
   async getProductById(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
+      include: {
+        images: true,
+        variants: {
+          include: {
+            size: true,
+            color: true,
+          },
+        },
+        reviews: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!product) {
       throw new NotFoundException(`Product with the id ${id} not found`);

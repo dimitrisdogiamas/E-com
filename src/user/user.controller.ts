@@ -12,7 +12,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth/jwt-auth.guard';
 import { Request } from 'express';
 import { Roles } from '../roles-guard/CustomDecorator/custom_decorator';
 import { Role } from '../roles-guard/roles.enum';
-import { RolesGuard } from '../roles-guard/RolesGuard.guard';
+import { RolesGuard } from '../roles-guard/roles.guard';
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}

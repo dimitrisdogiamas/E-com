@@ -7,8 +7,9 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat/chat.service';
+import { MessageType } from '@prisma/client';
 
-@WebSocketGateway(4000, { cors: { origin: '*' } }) // websocket on port 4000 with cors enabled
+@WebSocketGateway({ cors: { origin: '*' } }) // websocket shares the same port as main server with cors enabled
 export class ChatGateway {
   @WebSocketServer()
   server: Server;
@@ -79,7 +80,7 @@ export class ChatGateway {
       data.message,
       data.timestamp,
       data.receiverId || null,
-      data.type,
+      data.type as MessageType,
     );
 
     // broadcast the saved message to all clients in the room

@@ -6,7 +6,7 @@ export class RecommedationController {
   // inject the recommendation service
   constructor(private readonly recommendationService: RecommendationService) {}
 
-  @Get(':/userId')
+  @Get(':userId')
   async getRecommendationsForUser(@Param('userId') userId: string) {
     return this.recommendationService.getRecommendationsForUser(userId);
   }
