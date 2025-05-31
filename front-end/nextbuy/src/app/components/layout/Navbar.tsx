@@ -8,7 +8,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth } from '@/app/components/context/AuthContext';
 
 export default function Navbar() {
   const { items } = useCartStore();

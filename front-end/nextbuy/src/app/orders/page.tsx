@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth } from '@/app/components/context/AuthContext';
 import { getMyOrders, Order } from '@/app/services/orderService';
 import {
   Container,
