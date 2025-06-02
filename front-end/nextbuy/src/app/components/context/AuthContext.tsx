@@ -24,8 +24,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     //receive the token from the local storage
     const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
     if (storedToken) {
       setToken(storedToken);
+    }
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
@@ -33,10 +37,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // login function 
   const login = async(email: string, password: string) => {
     const data = await loginService(email, password) // we await the login service
-    setToken(data.token);
+    setToken(data.accessToken);
     setUser(data.user);
  // we store the token and the user in local storage
-    localStorage.setItem('token', data.token);
+    localStorage.setItem('token', data.accessToken);
     localStorage.setItem('user', JSON.stringify(data.user));
   };
 

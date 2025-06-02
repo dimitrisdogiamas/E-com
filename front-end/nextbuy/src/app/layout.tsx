@@ -3,7 +3,7 @@
 import './globals.css'
 import Navbar from './components/layout/Navbar';
 import { Footer }  from './components/layout/Footer';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from '@/app/components/context/AuthContext';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme';

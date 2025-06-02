@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth } from "@/app/components/context/AuthContext";
 import {
   Container,
   Paper,

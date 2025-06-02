@@ -8,10 +8,8 @@ const nextConfig = {
     // Allow builds to complete even with ESLint errors during development
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    // Enable strict mode for React
-    reactStrictMode: true,
-  },
+  // Enable strict mode for React
+  reactStrictMode: true,
 }
 
 module.exports = nextConfig 

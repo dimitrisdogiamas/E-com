@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth } from '@/app/components/context/AuthContext';
 import { getWishlist, removeFromWishlist, WishlistItem } from '@/app/services/wishlistService';
 import {
   Container,

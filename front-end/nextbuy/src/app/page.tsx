@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import RecommendationsSection from './components/recommendations/RecommendationsSection';
 
 type ProductImage = {
   id: string;
@@ -120,7 +121,12 @@ export default function HomePage() {
                     }
                   }}
                 >
-                  <Link href={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
+                  <Link 
+                    href={`/products/${product.id}`} 
+                    style={{ textDecoration: 'none' }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {product.images && product.images.length > 0 ? (
                       <CardMedia
                         component="img"
@@ -128,42 +134,49 @@ export default function HomePage() {
                         image={product.images[0].url}
                         alt={product.name}
                         sx={{ objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          height: 200,
-                          backgroundColor: '#f5f5f5',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.setAttribute('style', 'display: flex');
                         }}
-                      >
-                        <Typography color="text.secondary">No Image</Typography>
-                      </Box>
-                    )}
-                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
-                      <Chip 
-                        label={product.category} 
-                        size="small" 
-                        sx={{ mb: 1 }}
-                        color="primary"
-                        variant="outlined"
                       />
-                      <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
-                        {product.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {product.description.length > 60 
-                          ? `${product.description.substring(0, 60)}...` 
-                          : product.description
-                        }
-                      </Typography>
-                      <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                        ${product.price.toFixed(2)}
-                      </Typography>
-                    </CardContent>
+                    ) : null}
+                    
+                    {/* Fallback for missing images */}
+                    <Box
+                      sx={{
+                        height: 200,
+                        backgroundColor: '#f5f5f5',
+                        display: product.images && product.images.length > 0 ? 'none' : 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'text.secondary'
+                      }}
+                    >
+                      <Typography variant="body2">No Image Available</Typography>
+                    </Box>
                   </Link>
+                  <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                    <Chip 
+                      label={product.category} 
+                      size="small" 
+                      sx={{ mb: 1 }}
+                      color="primary"
+                      variant="outlined"
+                    />
+                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
+                      {product.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {product.description.length > 60 
+                        ? `${product.description.substring(0, 60)}...` 
+                        : product.description
+                      }
+                    </Typography>
+                    <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+                      ${product.price.toFixed(2)}
+                    </Typography>
+                  </CardContent>
                 </Card>
               </Grid>
             ))}
@@ -182,6 +195,12 @@ export default function HomePage() {
           </Button>
         </Box>
       </Box>
+
+      {/* Recommendations Section */}
+      <RecommendationsSection
+        maxItems={4}
+        showViewMore={true}
+      />
 
       {/* Call to Action Section */}
       <Box
