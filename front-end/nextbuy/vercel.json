@@ -1,17 +1,10 @@
 {
-  "builds": [
-    {
-      "src": "next.config.js",
-      "use": "@vercel/next"
-    }
-  ],
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm ci",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://nextbuy-backend.railway.app",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": ""
-  },
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
+    "NEXT_PUBLIC_API_URL": "https://your-backend-url.railway.app/api",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key"
   }
 } 
