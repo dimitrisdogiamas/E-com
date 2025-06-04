@@ -1,15 +1,12 @@
 import axios from 'axios';
-
-const API_URL = 'http://localhost:4001';
-
+import { API_CONFIG } from '../config/api';
 
 export async function getAllProducts() {
-  const res = await axios.get(`${API_URL}/products`);
+  const res = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}`);
   return res.data;
 }
 
-
 export async function getProductById(id: string) {
-  const res = await axios.get(`${API_URL}/products/${id}`)
+  const res = await axios.get(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}/${id}`)
   return res.data;
 }

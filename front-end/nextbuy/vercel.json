@@ -6,8 +6,8 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://your-backend-railway-url.railway.app",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_your-stripe-key"
+    "NEXT_PUBLIC_API_URL": "https://nextbuy-backend.railway.app",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": ""
   },
   "functions": {
     "app/api/**/*.ts": {
