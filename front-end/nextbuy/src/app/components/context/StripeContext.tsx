@@ -7,16 +7,18 @@ import { paymentStripeService } from '@/app/services/paymentStripe';
 
 interface StripeContextType {
   stripe: Stripe | null;
-  publishableKey: string | null;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const StripeContext = createContext<StripeContextType>({
   stripe: null,
-  publishableKey: null,
+  isLoading: true,
+  error: null,
 });
 
 export const useStripe = () => {
-  const context = useContext(StripeContext); // passing data to the component tree
+  const context = useContext(StripeContext);
   if (!context) {
     throw new Error('useStripe must be used within a StripeProvider');
   }
@@ -30,23 +32,34 @@ interface StripeProviderProps {
 
 export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {
   const [stripe, setStripe] = useState<Stripe | null>(null);
-  const [publishableKey, setPublishableKey] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeStripe = async () => {
       try {
-        // Get publishable key from backend
-        const config = await paymentStripeService.getStripeConfig();
-        setPublishableKey(config.publishableKey);
+        // Set timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+          setError('Stripe loading timeout - using fallback');
+          setIsLoading(false);
+        }, 10000); // 10 second timeout
 
-        // Load Stripe
-        const stripeInstance = await loadStripe(config.publishableKey);
-        setStripe(stripeInstance);
-      } catch (error) {
-        console.error('Failed to initialize Stripe:', error);
+        const stripeConfig = await paymentStripeService.getConfig();
+        
+        clearTimeout(timeoutId);
+        
+        if (stripeConfig.publishableKey) {
+          const stripeInstance = await loadStripe(stripeConfig.publishableKey);
+          setStripe(stripeInstance);
+          setError(null);
+        } else {
+          setError('No Stripe publishable key found');
+        }
+      } catch (err: any) {
+        console.warn('Stripe initialization failed:', err.message);
+        setError(`Stripe unavailable: ${err.message}`);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -54,12 +67,13 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {
   }, []);
 
   // this value wraps all the components that need access to the Stripe context
-  const value = {
+  const value: StripeContextType = {
     stripe,
-    publishableKey,
+    isLoading,
+    error,
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
         Loading payment system...
@@ -69,7 +83,7 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {
 
   return (
     <StripeContext.Provider value={value}>
-      {stripe && publishableKey ? (
+      {stripe && !error ? (
         <Elements stripe={stripe}>
           {children}
         </Elements>

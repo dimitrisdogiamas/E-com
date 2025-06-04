@@ -5,18 +5,19 @@ import {
   Container,
   Typography,
   Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  Button,
   Box,
-  CircularProgress,
   Alert,
-  Chip
+  Chip,
+  Stack
 } from '@mui/material';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import RecommendationsSection from './components/recommendations/RecommendationsSection';
+import { ProductCard } from './components/product/ProductCard';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { AnimatedButton } from './components/ui/AnimatedButton';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import StarIcon from '@mui/icons-material/Star';
 
 type ProductImage = {
   id: string;
@@ -42,19 +43,15 @@ export default function HomePage() {
   useEffect(() => {
     getAllProducts()
       .then((products) => {
-        // Show first 4 products as featured
-        setFeaturedProducts(products.slice(0, 4));
+        // Show first 8 products as featured
+        setFeaturedProducts(products.slice(0, 8));
       })
       .catch(() => setError('Failed to load products'))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return (
-      <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Container>
-    );
+    return <LoadingSpinner message="Loading NextBuy..." />;
   }
 
   if (error) {
@@ -67,165 +64,217 @@ export default function HomePage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Hero Section */}
+      {/* Enhanced Hero Section */}
       <Box
         sx={{
           textAlign: 'center',
-          py: 8,
+          py: { xs: 6, md: 10 },
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: 2,
+          borderRadius: 3,
           color: 'white',
-          mb: 6
+          mb: 8,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+            opacity: 0.3,
+          },
         }}
       >
-        <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Welcome To NextBuy
-        </Typography>
-        <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
-          Discover the latest trends in clothing and accessories
-        </Typography>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={() => router.push('/products')}
-          sx={{
-            backgroundColor: 'white',
-            color: '#667eea',
-            '&:hover': {
-              backgroundColor: 'rgba(255,255,255,0.9)'
-            }
-          }}
-        >
-          Shop Now
-        </Button>
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography 
+            variant="h1" 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 800,
+              fontSize: { xs: '2.5rem', md: '4rem' },
+              mb: 2,
+              background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Welcome To NextBuy
+          </Typography>
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              mb: 4, 
+              opacity: 0.95,
+              fontSize: { xs: '1.1rem', md: '1.5rem' },
+              maxWidth: '600px',
+              mx: 'auto'
+            }}
+          >
+            Discover premium fashion with cutting-edge technology. 
+            Your style, redefined.
+          </Typography>
+          
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={2} 
+            justifyContent="center"
+            sx={{ mb: 4 }}
+          >
+            <AnimatedButton
+              variant="contained"
+              size="large"
+              startIcon={<ShoppingBagIcon />}
+              onClick={() => router.push('/products')}
+              sx={{
+                backgroundColor: 'white',
+                color: '#667eea',
+                px: 4,
+                py: 1.5,
+                fontSize: '1.1rem',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.95)'
+                }
+              }}
+            >
+              Shop Collection
+            </AnimatedButton>
+            
+            <AnimatedButton
+              variant="outlined"
+              size="large"
+              startIcon={<TrendingUpIcon />}
+              onClick={() => router.push('/products')}
+              sx={{
+                borderColor: 'white',
+                color: 'white',
+                px: 4,
+                py: 1.5,
+                fontSize: '1.1rem',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              Trending Now
+            </AnimatedButton>
+          </Stack>
+
+          {/* Feature highlights */}
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={3}
+            justifyContent="center"
+            sx={{ mt: 4 }}
+          >
+            <Chip 
+              icon={<StarIcon />}
+              label="Premium Quality" 
+              sx={{ 
+                backgroundColor: 'rgba(255,255,255,0.2)', 
+                color: 'white',
+                fontWeight: 600
+              }} 
+            />
+            <Chip 
+              label="Free Shipping" 
+              sx={{ 
+                backgroundColor: 'rgba(255,255,255,0.2)', 
+                color: 'white',
+                fontWeight: 600
+              }} 
+            />
+            <Chip 
+              label="30-Day Returns" 
+              sx={{ 
+                backgroundColor: 'rgba(255,255,255,0.2)', 
+                color: 'white',
+                fontWeight: 600
+              }} 
+            />
+          </Stack>
+        </Box>
       </Box>
 
-      {/* Featured Products Section */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
-          Featured Products
-        </Typography>
+      {/* Enhanced Featured Products Section */}
+      <Box sx={{ mb: 8 }}>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography 
+            variant="h3" 
+            component="h2" 
+            sx={{ 
+              fontWeight: 800, 
+              mb: 2,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Featured Products
+          </Typography>
+          <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            sx={{ 
+              maxWidth: '600px', 
+              mx: 'auto',
+              fontWeight: 400
+            }}
+          >
+            Handpicked selections from our premium collection
+          </Typography>
+        </Box>
+
         {featuredProducts.length > 0 ? (
           <Grid container spacing={3}>
             {featuredProducts.map((product) => (
-              <Grid item xs={12} sm={6} md={3} key={product.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 3
-                    }
+              <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+                <ProductCard
+                  product={product}
+                  onAddToCart={(productId) => {
+                    // TODO: Implement add to cart
+                    console.log('Add to cart:', productId);
                   }}
-                >
-                  <Link 
-                    href={`/products/${product.id}`} 
-                    style={{ textDecoration: 'none' }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {product.images && product.images.length > 0 ? (
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={product.images[0].url}
-                        alt={product.name}
-                        sx={{ objectFit: 'cover' }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.nextElementSibling?.setAttribute('style', 'display: flex');
-                        }}
-                      />
-                    ) : null}
-                    
-                    {/* Fallback for missing images */}
-                    <Box
-                      sx={{
-                        height: 200,
-                        backgroundColor: '#f5f5f5',
-                        display: product.images && product.images.length > 0 ? 'none' : 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'text.secondary'
-                      }}
-                    >
-                      <Typography variant="body2">No Image Available</Typography>
-                    </Box>
-                  </Link>
-                  <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
-                    <Chip 
-                      label={product.category} 
-                      size="small" 
-                      sx={{ mb: 1 }}
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
-                      {product.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {product.description.length > 60 
-                        ? `${product.description.substring(0, 60)}...` 
-                        : product.description
-                      }
-                    </Typography>
-                    <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                      ${product.price.toFixed(2)}
-                    </Typography>
-                  </CardContent>
-                </Card>
+                  onToggleWishlist={(productId) => {
+                    // TODO: Implement wishlist toggle
+                    console.log('Toggle wishlist:', productId);
+                  }}
+                  isInWishlist={false}
+                />
               </Grid>
             ))}
           </Grid>
         ) : (
-          <Alert severity="info">No products available at the moment.</Alert>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              borderRadius: 2,
+              fontSize: '1.1rem'
+            }}
+          >
+            No products available at the moment.
+          </Alert>
         )}
         
-        <Box sx={{ textAlign: 'center', mt: 4 }}>
-          <Button
+        <Box sx={{ textAlign: 'center', mt: 6 }}>
+          <AnimatedButton
             variant="outlined"
             size="large"
             onClick={() => router.push('/products')}
+            sx={{ px: 4, py: 1.5 }}
           >
-            View All Products
-          </Button>
+            Explore All Products
+          </AnimatedButton>
         </Box>
       </Box>
 
       {/* Recommendations Section */}
-      <RecommendationsSection
-        maxItems={4}
-        showViewMore={true}
-      />
-
-      {/* Call to Action Section */}
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: 6,
-          backgroundColor: '#f8f9fa',
-          borderRadius: 2
-        }}
-      >
-        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Join us Today!
-        </Typography>
-        <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary' }}>
-          Sign up now and get exclusive discounts on your first order
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          size="large"
-          onClick={() => router.push('/auth/register')}
-        >
-          Sign Up Now
-        </Button>
-      </Box>
+      <RecommendationsSection />
     </Container>
   );
 }
