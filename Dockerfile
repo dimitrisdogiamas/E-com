@@ -17,6 +17,10 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
+# Set environment variables needed for build
+ENV NODE_ENV=production
+ENV DATABASE_URL="mysql://localhost:3306/API"
+
 # Build the application
 RUN npm run build
 
