@@ -18,7 +18,6 @@ async function setupRailwayDatabase() {
 
     if (productCount === 0) {
       console.log('🌱 Seeding database with initial data...');
-      
       // Create admin user
       const adminUser = await prisma.user.upsert({
         where: { email: 'admin@nextbuy.com' },
