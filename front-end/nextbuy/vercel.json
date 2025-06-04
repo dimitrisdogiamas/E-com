@@ -1,0 +1,17 @@
+{
+  "builds": [
+    {
+      "src": "next.config.js",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://your-backend-railway-url.railway.app",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_your-stripe-key"
+  },
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+} 

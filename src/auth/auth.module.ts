@@ -1,37 +1,33 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
-import { UserModule } from 'src/user/user.module';
-import { JwtStrategy } from './jwt-auth/jwt.strategy';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
+import { UserModule } from '../user/user.module';
+import { EmailModule } from '../email/email.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { OauthController } from './gauth/oauth.controller';
-import { GoogleOauthStrategy } from './gauth/google-oauth.strategy';
+import { GoogleStrategy } from './google.strategy';
 import { JwtAuthGuard } from './jwt-auth/jwt-auth.guard';
-import { OauthSevice } from './gauth/oauth.service';
-import { JwtAuthService } from './jwt-auth/jwt.service';
+import { PrismaService } from '../prisma/prisma.service';
+
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    UserModule,
+    EmailModule,
+    PassportModule,
+    ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'), //ορίζουμε το μυστικό κλειδί για το JWT
-        signOptions: { expiresIn: '1h' }, //ορίζουμε το χρόνο ισχύος του JWT
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '7d' },
       }),
+      inject: [ConfigService],
     }),
-    UserModule, // εισάγουμε για να χρησιμοποιήσουμε τον UserService
   ],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    GoogleOauthStrategy,
-    JwtAuthGuard,
-    OauthSevice,
-    JwtAuthService,
-  ],
-  controllers: [AuthController, OauthController],
-  exports: [AuthService, JwtAuthGuard, JwtAuthService, JwtModule],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, PrismaService],
+  controllers: [AuthController],
+  exports: [AuthService, JwtAuthGuard, JwtService, PrismaService],
 })
 export class AuthModule {}

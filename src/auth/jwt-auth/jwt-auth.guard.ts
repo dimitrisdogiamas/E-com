@@ -1,11 +1,18 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private jwtService: JwtService) {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {
     super();
   }
 
@@ -13,8 +20,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     let token: string | undefined;
     const authHeader = request.headers.authorization;
-    //διαβάζουμε το token απο το header
-    if (authHeader && authHeader.startsWith('Bearer')) {
+    // διαβάζουμε το token από το header
+    if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
     }
     // check for token in cookies if not found in header
@@ -26,13 +33,26 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException('Token not found');
     }
     try {
-      const user = await this.jwtService.verifyAsync(token);
-      console.log('User from token:', user); //debugging
-      request.user = { id: user.sub, email: user.email };
+      const payload = await this.jwtService.verifyAsync(token);
+      // Fetch user from database to get role
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { id: true, email: true, role: true },
+      });
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      console.log('User from token:', user); // debugging
+      request.user = {
+        id: user.id,
+        email: user.email,
+        roles: [user.role], // Convert single role to array for RolesGuard
+      };
+      return true;
     } catch (error) {
       console.log('Token verification failed:', error);
-      throw new UnauthorizedException('Invalid token ');
+      throw new UnauthorizedException('Invalid token');
     }
-    return true; // συνεχίζουμε την υπόλοιπη επεξεργασία guard
   }
 }

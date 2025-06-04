@@ -59,15 +59,17 @@ export class RecommendationService {
     ];
     return uniqueCategories;
   }
+
   // now we need to update the getRecommendationsForUser method
   async getRecommendationsForUser(userId: string, limit: number = 10) {
     try {
       const userCategories = await this.getUserCategories(userId);
 
       if (userCategories.length === 0) {
-        return this.getTopProductsByCategory('all');
+        // If user has no order history, return popular products
+        return this.getGeneralRecommendations(limit);
       }
-      // get purchasded products to exclude
+      // get purchased products to exclude
       const purchasedProducts = await this.getUserPurchasedProducts(userId);
       const purchasedVariantIds = purchasedProducts.map((p) => p.variantId);
       //get recommendations from same categories
@@ -98,6 +100,32 @@ export class RecommendationService {
       });
     } catch (error) {
       throw new Error(`Failed to fetch recommendations: ${error.message}`);
+    }
+  }
+
+  // General recommendations for all users (popular products)
+  async getGeneralRecommendations(limit: number = 8) {
+    try {
+      return this.prisma.product.findMany({
+        include: {
+          images: true,
+          reviews: true,
+          variants: true,
+        },
+        orderBy: [
+          {
+            reviews: {
+              _count: 'desc', // Products with most reviews first
+            },
+          },
+          {
+            createdAt: 'desc', // Then by newest
+          },
+        ],
+        take: limit,
+      });
+    } catch (error) {
+      throw new Error(`Failed to fetch general recommendations: ${error.message}`);
     }
   }
 }

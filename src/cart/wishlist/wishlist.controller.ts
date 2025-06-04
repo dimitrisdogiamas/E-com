@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { WishlistService } from './wishlist.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth/jwt-auth.guard';
 
@@ -6,26 +15,33 @@ import { JwtAuthGuard } from '../../auth/jwt-auth/jwt-auth.guard';
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
-  // make a post request to add to wishList
+  // Add to wishlist
   @UseGuards(JwtAuthGuard)
-  @Post('add')
-  async addToWishList(@Body() body: { userId: string; productId: string }) {
-    return this.wishlistService.addToWishList(body.userId, body.productId);
-  }
-
-  //remove from wishList
-  @UseGuards(JwtAuthGuard)
-  @Delete('remove')
-  async removeFromWishList(
-    @Body() body: { userId: string; productId: string },
+  @Post()
+  async addToWishList(
+    @Request() req: any,
+    @Body() body: { productId: string },
   ) {
-    return this.wishlistService.removeFromWishList(body.userId, body.productId);
+    const userId = req.user.id;
+    return this.wishlistService.addToWishList(userId, body.productId);
   }
 
-  // Get request to get the wishList
+  // Remove from wishlist
   @UseGuards(JwtAuthGuard)
-  @Get('get')
-  async getWishList(@Body() body: { userId: string }) {
-    return this.wishlistService.getWishList(body.userId);
+  @Delete(':productId')
+  async removeFromWishList(
+    @Request() req: any,
+    @Param('productId') productId: string,
+  ) {
+    const userId = req.user.id;
+    return this.wishlistService.removeFromWishList(userId, productId);
+  }
+
+  // Get user's wishlist
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getWishList(@Request() req: any) {
+    const userId = req.user.id;
+    return this.wishlistService.getWishList(userId);
   }
 }
