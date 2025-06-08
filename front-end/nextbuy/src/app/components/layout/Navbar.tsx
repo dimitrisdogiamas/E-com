@@ -1,37 +1,36 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCartStore } from '../cart/cartStore';
-import { 
-  Badge, 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  Box, 
-  IconButton, 
-  useTheme,
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Badge,
+  Box,
   TextField,
-  InputAdornment
+  InputAdornment,
+  useTheme
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import PersonIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
-import LoginIcon from '@mui/icons-material/Login';
-import ReceiptIcon from '@mui/icons-material/Receipt';
 import SearchIcon from '@mui/icons-material/Search';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useAuth } from '@/app/components/context/AuthContext';
+import { useCart } from '@/app/components/context/CartContext';
 
 export default function Navbar() {
-  const { items } = useCartStore();
   const { user, logout } = useAuth();
+  const { cartItemsCount } = useCart();
   const theme = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const cartItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,20 +221,20 @@ export default function Navbar() {
               }}
             >
               <LoginIcon />
-                </IconButton>
-                <Button
-                  color="inherit"
-                  component={Link}
-                  href="/auth/register"
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                  }}
-                >
-                  Register
-                </Button>
-                </>
+            </IconButton>
+            <Button 
+              color="inherit" 
+              component={Link} 
+              href="/auth/register"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              Register
+            </Button>
+          </>
           )}
         </Box>
       </Toolbar>

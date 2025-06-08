@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/components/context/AuthContext';
-import { getMyOrders, Order } from '@/app/services/orderService';
+import { getMyOrders, cancelOrder, Order } from '@/app/services/orderService';
 import {
   Container,
   Typography,
@@ -15,7 +15,13 @@ import {
   Chip,
   Divider,
   Button,
-  Paper
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Snackbar
 } from '@mui/material';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -29,6 +35,10 @@ export default function OrderHistoryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -53,6 +63,36 @@ export default function OrderHistoryPage() {
       setLoading(false);
     }
   }, [user, token, router]);
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel || !token) return;
+
+    setCancelling(true);
+    try {
+      await cancelOrder(orderToCancel, token);
+      
+      // Update the order status in the local state
+      setOrders(prev => prev.map(order => 
+        order.id === orderToCancel 
+          ? { ...order, status: 'CANCELLED' as const }
+          : order
+      ));
+      
+      setNotification({ message: 'Order cancelled successfully', type: 'success' });
+      setCancelDialogOpen(false);
+      setOrderToCancel(null);
+    } catch (error) {
+      console.error('Cancel order error:', error);
+      setNotification({ message: 'Failed to cancel order', type: 'error' });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const openCancelDialog = (orderId: string) => {
+    setOrderToCancel(orderId);
+    setCancelDialogOpen(true);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -123,14 +163,14 @@ export default function OrderHistoryPage() {
       )}
 
       {orders.length === 0 ? (
-        <Card sx={{ textAlign: 'center', p: 6 }}>
+        <Card sx={{ textAlign: 'center', py: 6 }}>
           <CardContent>
             <ShoppingBagIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No orders found
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              You haven't placed any orders yet. Start shopping to see your orders here!
+              You haven't placed any orders yet.
             </Typography>
             <Button
               variant="contained"
@@ -219,6 +259,7 @@ export default function OrderHistoryPage() {
                             variant="outlined"
                             color="error"
                             size="small"
+                            onClick={() => openCancelDialog(order.id)}
                           >
                             Cancel Order
                           </Button>
@@ -276,6 +317,43 @@ export default function OrderHistoryPage() {
           </Grid>
         </Paper>
       )}
+
+      {/* Cancel Order Confirmation Dialog */}
+      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
+        <DialogTitle>Cancel Order</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to cancel this order? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCancelDialogOpen(false)} disabled={cancelling}>
+            Keep Order
+          </Button>
+          <Button 
+            onClick={handleCancelOrder} 
+            color="error" 
+            variant="contained"
+            disabled={cancelling}
+          >
+            {cancelling ? <CircularProgress size={20} /> : 'Cancel Order'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={4000}
+        onClose={() => setNotification(null)}
+      >
+        <Alert 
+          severity={notification?.type} 
+          onClose={() => setNotification(null)}
+        >
+          {notification?.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 } 

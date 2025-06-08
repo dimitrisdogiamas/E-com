@@ -20,7 +20,8 @@
   },
   "include": [
     "src/**/*",
-    "scripts/**/*"
+    "scripts/**/*",
+    "prisma/**/*"
   ],
   "exclude": [
     "front-end/**/*",

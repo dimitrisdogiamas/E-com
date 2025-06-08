@@ -114,4 +114,23 @@ export async function clearCart(token: string): Promise<Cart> {
     console.error('Clear cart error:', error);
     throw new Error('Failed to clear cart');
   }
+}
+
+// Helper function to add product to cart by productId (gets first variant automatically)
+export async function addProductToCart(productId: string, quantity: number, token: string): Promise<Cart> {
+  try {
+    // Get product details to find first variant
+    const response = await fetch(`${API_URL}/products/${productId}`);
+    const productDetails = await response.json();
+    
+    if (productDetails.variants && productDetails.variants.length > 0) {
+      const firstVariant = productDetails.variants[0];
+      return await addToCart(token, firstVariant.id, quantity);
+    } else {
+      throw new Error('No variants available for this product');
+    }
+  } catch (error) {
+    console.error('Add product to cart error:', error);
+    throw new Error('Failed to add product to cart');
+  }
 } 

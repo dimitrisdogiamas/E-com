@@ -19,17 +19,17 @@ export class OrderController {
 
   @Post()
   async createOrder(@Body() createOrderDto: CreateOrderDto, @Request() req) {
-    return this.orderService.createOrder(createOrderDto, req.user.userId);
+    return this.orderService.createOrder(createOrderDto, req.user.id);
   }
 
   @Get('my')
   async getMyOrders(@Request() req) {
-    return this.orderService.getMyOrders(req.user.userId);
+    return this.orderService.getMyOrders(req.user.id);
   }
 
   @Get(':id')
   async getOrderById(@Param('id') id: string, @Request() req) {
-    return this.orderService.getOrderById(id, req.user.userId);
+    return this.orderService.getOrderById(id, req.user.id);
   }
 
   @Patch(':id/status')

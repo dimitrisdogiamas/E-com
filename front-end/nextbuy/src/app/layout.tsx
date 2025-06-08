@@ -4,6 +4,7 @@ import './globals.css'
 import Navbar from './components/layout/Navbar';
 import { Footer }  from './components/layout/Footer';
 import { AuthProvider } from '@/app/components/context/AuthContext';
+import { CartProvider } from '@/app/components/context/CartContext';
 import { StripeProvider } from '@/app/components/context/StripeContext';
 import ErrorBoundary from '@/app/components/ErrorBoundary';
 import { ThemeProvider } from '@mui/material/styles';
@@ -22,11 +23,13 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <AuthProvider>
-              <StripeProvider>
-                <Navbar />
-                <main className="flex-grow">{children}</main>
-                <Footer />
-              </StripeProvider>
+              <CartProvider>
+                <StripeProvider>
+                  <Navbar />
+                  <main className="flex-grow">{children}</main>
+                  <Footer />
+                </StripeProvider>
+              </CartProvider>
             </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>

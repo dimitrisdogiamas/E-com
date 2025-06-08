@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCart } from './cartService';
 
 const API_URL = 'http://localhost:4001';
 
@@ -42,18 +43,21 @@ interface BackendOrderData {
 
 export async function createOrder(orderData: OrderData, token: string) {
   try {
-    // Transform frontend data to backend format
+    // Get the real cart from backend instead of using fake data
+    const realCart = await getCart(token);
+    
+    // Transform real cart data to backend format
     const backendOrderData: BackendOrderData = {
       paymentMethod: orderData.paymentMethod === 'creditCard' ? 'Stripe' : 'Cash On Delivery',
-      totalAmount: orderData.total,
+      totalAmount: realCart.total, // Use real cart total
       shippingFullName: orderData.shippingDetails.fullName,
       shippingAddress: orderData.shippingDetails.address,
       shippingPhone: orderData.shippingDetails.phone,
-      items: orderData.items.map(item => ({
-        productId: item.id.toString(), // Convert to string as backend expects
-        variantId: generateVariantId(item.id), // Generate a variant ID (temporary solution)
+      items: realCart.items.map(item => ({
+        productId: item.variant.product.id, // Use real product ID
+        variantId: item.variant.id, // Use real variant ID
         quantity: item.quantity,
-        price: item.price
+        price: item.variant.price || item.variant.product.price
       }))
     };
 
@@ -72,12 +76,4 @@ export async function createOrder(orderData: OrderData, token: string) {
     }
     throw error;
   }
-}
-
-// Temporary function to generate variant ID
-// In a real app, this should come from the product selection
-function generateVariantId(productId: number): string {
-  // For now, we'll use the productId as variantId
-  // In the future, this should be selected by the user from product variants
-  return `variant-${productId}`;
 }
