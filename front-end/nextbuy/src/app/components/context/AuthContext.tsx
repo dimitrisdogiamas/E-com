@@ -11,7 +11,7 @@ import { useErrorHandler } from '../../lib/errorHandler';
 type AuthContextType = {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, oAuthToken?: string, oAuthUser?: User) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -45,10 +45,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // login function 
-  const login = async(email: string, password: string) => {
+  // login function (supports both regular and OAuth login)
+  const login = async(email: string, password: string, oAuthToken?: string, oAuthUser?: User) => {
     try {
-      const data = await loginService(email, password); // we await the login service
+      let data;
+      
+      // If OAuth token and user are provided, use them directly
+      if (oAuthToken && oAuthUser) {
+        data = {
+          accessToken: oAuthToken,
+          user: oAuthUser
+        };
+      } else {
+        // Regular login flow
+        data = await loginService(email, password);
+      }
       
       setToken(data.accessToken);
       setUser(data.user);

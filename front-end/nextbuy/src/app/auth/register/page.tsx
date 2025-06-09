@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { register } from '@/app/services/authService';
+import OAuthButtons from '@/app/components/auth/OAuthButtons';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -131,6 +132,9 @@ export default function RegisterPage() {
           >
             {loading ? <CircularProgress size={24} /> : 'Create Account'}
           </Button>
+
+          {/* OAuth Registration Options */}
+          <OAuthButtons disabled={loading} isLoading={loading} />
 
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Typography variant="body2">

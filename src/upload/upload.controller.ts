@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Body,
-  Param,
   Query,
   UseInterceptors,
   UploadedFile,
@@ -66,9 +65,7 @@ export class UploadController {
 
   @Post('profile-picture')
   @UseInterceptors(FileInterceptor('image'))
-  async uploadProfilePicture(
-    @UploadedFile() file: any,
-  ): Promise<UploadResult> {
+  async uploadProfilePicture(@UploadedFile() file: any): Promise<UploadResult> {
     if (!file) {
       throw new BadRequestException('No image file provided');
     }
@@ -95,10 +92,26 @@ export class UploadController {
     return this.uploadService.getFileInfo(url);
   }
 
+  @Get('config')
+  async getUploadConfig() {
+    return {
+      maxFileSize: 5 * 1024 * 1024, // 5MB
+      maxFiles: 10,
+      allowedTypes: [
+        'image / jpeg',
+        'image / jpg',
+        'image / png',
+        'image / gif',
+        'image / webp',
+      ],
+      folders: ['products', 'profiles', 'general'],
+    };
+  }
+
   @Get('stats')
   @UseGuards(RolesGuard)
   @Roles(Role.Admin)
   async getUploadStats() {
     return this.uploadService.getUploadStats();
   }
-} 
+}

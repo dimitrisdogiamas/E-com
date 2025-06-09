@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import OAuthButtons from '@/app/components/auth/OAuthButtons';
 
 export default function LoginPage() {
   const { login: loginContext } = useAuth();
@@ -94,6 +95,9 @@ export default function LoginPage() {
           >
             {loading ? <CircularProgress size={24} /> : 'Sign In'}
           </Button>
+
+          {/* OAuth Login Options */}
+          <OAuthButtons disabled={loading} isLoading={loading} />
 
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Typography variant="body2">

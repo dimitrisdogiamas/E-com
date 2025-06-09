@@ -19,6 +19,8 @@ import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ChatIcon from '@mui/icons-material/Chat'; 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
@@ -131,8 +133,22 @@ export default function Navbar() {
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 },
               }}
+                          >
+                Wishlist
+              </Button>
+          )}
+          {user && (
+            <Button 
+              color="inherit" 
+              component={Link} 
+              href="/chat"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
             >
-              Wishlist
+              Chat
             </Button>
           )}
           <IconButton 
@@ -166,6 +182,19 @@ export default function Navbar() {
                 title="My Orders"
               >
                 <ReceiptIcon />
+              </IconButton>
+              <IconButton 
+                color="inherit" 
+                component={Link} 
+                href="/upload"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+                title="File Upload"
+              >
+                <CloudUploadIcon />
               </IconButton>
               <IconButton 
                 color="inherit" 
