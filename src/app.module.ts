@@ -16,11 +16,7 @@ import { EmailModule } from './email/email.module';
 import { UploadModule } from './upload/upload.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
-import { ProfileController } from './profile/profile-controller/profile.controller';
-import { ProfileService } from './profile/profile-service/profile.service';
 import { ProfileModule } from './profile/profile.module';
-import { ProductService } from './product/product-service/product.service';
-import { ProductController } from './product/product-controller/product.controller';
 
 @Module({
   imports: [
@@ -40,7 +36,7 @@ import { ProductController } from './product/product-controller/product.controll
     UploadModule,
     ProfileModule,
   ],
-  controllers: [AppController, ProfileController, ProductController],
-  providers: [AppService, PrismaService, ProfileService, ProductService],
+  controllers: [AppController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

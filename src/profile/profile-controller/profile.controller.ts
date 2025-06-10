@@ -13,24 +13,24 @@ import { JwtAuthGuard } from '../../auth/jwt-auth/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { UpdateProfileDto } from '../UpdateProfileDto';
 import { CreateProfileDto } from './CreateProfileDto';
-@Controller('profile-controller')
+@Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
+  @Get()
   async getProfile(@Req() req) {
     try {
       const userId = req.user.id;
       const profile = await this.profileService.getProfile(userId);
       return { success: true, data: profile };
     } catch (error) {
-      throw new BadRequestException('Error fetching profile');
       console.error('Error fetching profile:', error);
+      throw new BadRequestException('Error fetching profile');
     }
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('profile')
+  @Patch()
   async updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
     try {
       const userId = req.user.id;
@@ -49,7 +49,7 @@ export class ProfileController {
     }
   }
   @UseGuards(JwtAuthGuard)
-  @Post('profile')
+  @Post()
   async createProfile(@Req() req, @Body() createProfileDto: CreateProfileDto) {
     try {
       const userId = req.user.id;
@@ -68,7 +68,7 @@ export class ProfileController {
     }
   }
   @UseGuards(JwtAuthGuard)
-  @Delete('profile')
+  @Delete()
   async DeleteProfile(@Req() req) {
     try {
       const userId = req.user.id;

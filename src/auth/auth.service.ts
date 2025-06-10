@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { EmailService } from '../email/email.service';
@@ -14,6 +20,32 @@ export class AuthService {
     private userService: UserService,
     private emailService: EmailService,
   ) {}
+
+  generateToken(payload: any): string {
+    return this.jwtService.sign(payload);
+  }
+
+  async findOrCreateGoogleUser(googleUser: any) {
+    const { email, firstName, lastName, picture } = googleUser;
+    const name = `${firstName || ''} ${lastName || ''}`.trim() || email;
+
+    // Try to find existing user
+    let user = await this.userService.findUserByEmail(email);
+
+    if (!user) {
+      // Create new user for Google OAuth
+      user = await this.userService.createUser({
+        email,
+        name,
+        password: '', // Empty password for OAuth users
+        // You can add picture field to user model if needed
+      });
+
+      this.logger.log(`Created new Google OAuth user: ${email}`);
+    }
+
+    return user;
+  }
 
   async login(email: string, password: string) {
     const user = await this.userService.findUserByEmail(email);
@@ -34,14 +66,14 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
-      }
+        name: user.name,
+      },
     };
   }
 
   async register(registerDto: RegisterDto) {
     const { email, name, password } = registerDto;
-    
+
     const existingUser = await this.userService.findUserByEmail(email);
     if (existingUser) {
       throw new ConflictException('User already exists');
@@ -60,7 +92,7 @@ export class AuthService {
     });
 
     // Return user without password
-    const { password: _, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = newUser; // eslint-disable-line @typescript-eslint/no-unused-vars
     return userWithoutPassword;
   }
 
@@ -70,7 +102,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
       });
-      
+
       if (emailSent) {
         this.logger.log(`✅ Welcome email sent to ${user.email}`);
       }

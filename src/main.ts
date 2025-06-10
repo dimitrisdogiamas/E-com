@@ -6,12 +6,13 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
   // Enable CORS for frontend - handle both development and production
-  const corsOrigins = process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, 'https://nextbuy-frontend.railway.app']
-    : ['http://localhost:3000'];
-    
+  const corsOrigins =
+    process.env.NODE_ENV === 'production'
+      ? [process.env.FRONTEND_URL, 'https://nextbuy-frontend.railway.app']
+      : ['http://localhost:3000'];
+
+  // enable cors for the frontend
   app.enableCors({
     origin: corsOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
