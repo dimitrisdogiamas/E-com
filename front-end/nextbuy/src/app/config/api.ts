@@ -7,7 +7,7 @@ export const API_CONFIG = {
     CART: '/cart',
     ORDERS: '/orders',
     PAYMENT: '/payment',
-    PROFILE: '/profile-controller',
+    PROFILE: '/profile',
     WISHLIST: '/wishlist',
     REVIEWS: '/reviews',
     SEARCH: '/search',

@@ -94,11 +94,17 @@ export default function ChatPage() {
       return;
     }
 
+    console.log('🔍 Chat page: User authenticated:', user);
+    console.log('🔍 Chat page: Socket connected:', connected);
+
     if (connected) {
+      console.log('✅ Chat page: Socket is connected, joining rooms...');
       // Join general room by default
       joinRoom('general');
       loadConversations();
       loadMessages('general');
+    } else {
+      console.log('⚠️ Chat page: Socket not connected yet...');
     }
   }, [user, router, connected]);
 
@@ -210,8 +216,13 @@ export default function ChatPage() {
                 <OnlineIcon sx={{ fontSize: 12 }} />
               </Badge>
               <Typography variant="caption" color="text.secondary">
-                {connected ? 'Connected' : 'Disconnected'}
+                {connected ? '🟢 Connected' : '🔴 Disconnected'}
               </Typography>
+              {socket && (
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  ID: {socket.id?.substring(0, 8)}...
+                </Typography>
+              )}
             </Box>
           </Box>
 

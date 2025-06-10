@@ -16,7 +16,7 @@ export interface UpdateProfileData {
 }
 
 export async function getProfile(token: string): Promise<Profile> {
-  const res = await axios.get(`${API_URL}/profile-controller/profile`, {
+  const res = await axios.get(`${API_URL}/profile`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -25,7 +25,7 @@ export async function getProfile(token: string): Promise<Profile> {
 }
 
 export async function updateProfile(token: string, data: UpdateProfileData): Promise<Profile> {
-  const res = await axios.patch(`${API_URL}/profile-controller/profile`, data, {
+  const res = await axios.patch(`${API_URL}/profile`, data, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ export async function updateProfile(token: string, data: UpdateProfileData): Pro
 }
 
 export async function deleteProfile(token: string): Promise<void> {
-  await axios.delete(`${API_URL}/profile-controller/profile`, {
+  await axios.delete(`${API_URL}/profile`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

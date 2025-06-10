@@ -1,15 +1,15 @@
-'use client';
-
+import type { Metadata } from 'next'
 import './globals.css'
-import Navbar from './components/layout/Navbar';
-import { Footer }  from './components/layout/Footer';
-import { AuthProvider } from '@/app/components/context/AuthContext';
-import { CartProvider } from '@/app/components/context/CartContext';
-import { StripeProvider } from '@/app/components/context/StripeContext';
-import ErrorBoundary from '@/app/components/ErrorBoundary';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { theme } from './theme';
+import ClientLayout from './components/ClientLayout';
+
+export const metadata: Metadata = {
+  title: 'NextBuy - E-commerce Store',
+  description: 'Your premium e-commerce destination',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/next.svg',
+  },
+}
 
 export default function RootLayout({
   children,
@@ -19,20 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col min-h-screen">
-        <ErrorBoundary>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <AuthProvider>
-              <CartProvider>
-                <StripeProvider>
-                  <Navbar />
-                  <main className="flex-grow">{children}</main>
-                  <Footer />
-                </StripeProvider>
-              </CartProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </ErrorBoundary>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

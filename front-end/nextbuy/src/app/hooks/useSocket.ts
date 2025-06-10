@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '@/app/components/context/AuthContext';
 
@@ -33,13 +33,19 @@ interface UseSocketReturn {
   messages: Message[];
   conversations: string[];
   joinRoom: (roomId: string) => void;
-  sendMessage: (roomId: string, message: string, receiverId?: string, type?: 'TEXT' | 'IMAGE' | 'VIDEO') => void;
+  sendMessage: (
+    roomId: string,
+    message: string,
+    receiverId?: string,
+    type?: 'TEXT' | 'IMAGE' | 'VIDEO',
+  ) => void;
   editMessage: (messageId: string, newMessage: string) => void;
   deleteMessage: (messageId: string) => void;
   markAsRead: (messageId: string) => void;
   loadMessages: (roomId: string, take?: number, skip?: number) => void;
   loadConversations: () => void;
   clearMessages: () => void;
+  forceReconnect: () => void;
 }
 
 export function useSocket(): UseSocketReturn {
@@ -49,6 +55,43 @@ export function useSocket(): UseSocketReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversations, setConversations] = useState<string[]>([]);
   const socketRef = useRef<Socket | null>(null);
+  const connectionCheckInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Force state update function
+  const forceStateUpdate = useCallback(() => {
+    if (socketRef.current) {
+      const isConnected = socketRef.current.connected;
+      console.log('🔄 Force state update - Socket connected:', isConnected);
+      setConnected(isConnected);
+    }
+  }, []);
+
+  // Periodic connection check
+  useEffect(() => {
+    connectionCheckInterval.current = setInterval(() => {
+      forceStateUpdate();
+    }, 1000); // Check every second
+
+    return () => {
+      if (connectionCheckInterval.current) {
+        clearInterval(connectionCheckInterval.current);
+      }
+    };
+  }, [forceStateUpdate]);
+
+  const forceReconnect = useCallback(() => {
+    console.log('🔄 Force reconnect triggered');
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+      setSocket(null);
+      setConnected(false);
+    }
+    // Force re-render after cleanup
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  }, []);
 
   useEffect(() => {
     // if the user is not valid or the token is not valid then disconnect the socket and set it's value to null
@@ -62,6 +105,10 @@ export function useSocket(): UseSocketReturn {
       return;
     }
 
+    console.log(
+      `🔍 useSocket: Creating new socket connection for user: ${user.email}`,
+    );
+
     // Create socket connection
     const newSocket = io('http://localhost:4001', {
       auth: {
@@ -69,37 +116,69 @@ export function useSocket(): UseSocketReturn {
         userId: user.id,
       },
       transports: ['websocket', 'polling'],
+      timeout: 10000,
+      forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
-    // set the socket ref value to the new socket 
+    // set the socket ref value to the new socket
     socketRef.current = newSocket;
     setSocket(newSocket);
 
     // Connection events
     newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id);
+      console.log('✅ Socket connected:', newSocket.id);
+      console.log('✅ Socket transport:', newSocket.io.engine.transport.name);
       setConnected(true);
+      // Force additional state update after short delay
+      setTimeout(() => {
+        setConnected(true);
+        forceStateUpdate();
+      }, 100);
     });
 
     // disconnection event
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
+    newSocket.on('disconnect', (reason) => {
+      console.log('❌ Socket disconnected:', reason);
       setConnected(false);
     });
 
     // connection error event
     newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      console.error('❌ Socket connection error:', error);
+      console.error('❌ Error details:', error.message);
       setConnected(false);
+    });
+
+    // Reconnection events
+    newSocket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
+      setConnected(true);
+      setTimeout(() => {
+        setConnected(true);
+        forceStateUpdate();
+      }, 100);
+    });
+
+    newSocket.on('reconnect_error', (error) => {
+      console.error('🔄 Reconnection error:', error);
+    });
+
+    // Listen for connection confirmation from server
+    newSocket.on('connected', (data) => {
+      console.log('🎉 Chat connection confirmed:', data);
+      setConnected(true);
     });
 
     // Message events
     newSocket.on('message', (message: Message) => {
       console.log('Received message:', message);
-      setMessages(prev => {
-        const existing = prev.find(m => m.id === message.id);
+      setMessages((prev) => {
+        const existing = prev.find((m) => m.id === message.id);
         if (existing) {
-          return prev.map(m => m.id === message.id ? message : m);
+          return prev.map((m) => (m.id === message.id ? message : m));
         }
         return [...prev, message];
       });
@@ -112,22 +191,22 @@ export function useSocket(): UseSocketReturn {
 
     newSocket.on('messageEdited', (updatedMessage: Message) => {
       console.log('Message edited:', updatedMessage);
-      setMessages(prev => 
-        prev.map(m => m.id === updatedMessage.id ? updatedMessage : m)
+      setMessages((prev) =>
+        prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m)),
       );
     });
 
     newSocket.on('messageDeleted', (deletedMessage: Message) => {
       console.log('Message deleted:', deletedMessage);
-      setMessages(prev => 
-        prev.map(m => m.id === deletedMessage.id ? deletedMessage : m)
+      setMessages((prev) =>
+        prev.map((m) => (m.id === deletedMessage.id ? deletedMessage : m)),
       );
     });
 
     newSocket.on('messageRead', (readMessage: Message) => {
       console.log('Message marked as read:', readMessage);
-      setMessages(prev => 
-        prev.map(m => m.id === readMessage.id ? readMessage : m)
+      setMessages((prev) =>
+        prev.map((m) => (m.id === readMessage.id ? readMessage : m)),
       );
     });
 
@@ -140,13 +219,24 @@ export function useSocket(): UseSocketReturn {
       console.log(`Joined room ${roomId} with client ${clientId}`);
     });
 
+    // Authentication error handling
+    newSocket.on('auth_error', (error) => {
+      console.error('❌ Socket authentication error:', error);
+      setConnected(false);
+      // Optionally redirect to login or show error message
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('❌ Socket error:', error);
+    });
+
     // Cleanup on unmount
     return () => {
       if (newSocket) {
         newSocket.disconnect();
       }
     };
-  }, [user, token]);
+  }, [user, token, forceStateUpdate]);
 
   const joinRoom = (roomId: string) => {
     if (socket && connected) {
@@ -155,10 +245,10 @@ export function useSocket(): UseSocketReturn {
   };
 
   const sendMessage = (
-    roomId: string, 
-    message: string, 
-    receiverId?: string, 
-    type: 'TEXT' | 'IMAGE' | 'VIDEO' = 'TEXT'
+    roomId: string,
+    message: string,
+    receiverId?: string,
+    type: 'TEXT' | 'IMAGE' | 'VIDEO' = 'TEXT',
   ) => {
     if (socket && connected && user) {
       const messageData = {
@@ -169,7 +259,6 @@ export function useSocket(): UseSocketReturn {
         type,
         timestamp: new Date().toISOString(),
       };
-      
       socket.emit('saveMessage', messageData);
     }
   };
@@ -221,5 +310,6 @@ export function useSocket(): UseSocketReturn {
     loadMessages,
     loadConversations,
     clearMessages,
+    forceReconnect,
   };
-} 
+}

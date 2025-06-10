@@ -1,6 +1,8 @@
+'use client';
+
 import { createTheme } from '@mui/material/styles';
 
-export const theme = createTheme({
+export const getTheme = () => createTheme({
   palette: {
     mode: 'light',
     primary: {
@@ -168,4 +170,7 @@ export const theme = createTheme({
       },
     },
   },
-}); 
+});
+
+// Create the theme instance
+export const theme = getTheme(); 
