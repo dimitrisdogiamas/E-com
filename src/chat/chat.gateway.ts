@@ -93,7 +93,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         },
         timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error(
         `❌ Authentication failed for client ${client.id}:`,

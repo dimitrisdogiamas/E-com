@@ -38,7 +38,7 @@ async function testAuthentication() {
     }
     
     // Test token validation for the user to check if the user is logged in
-    const profileResponse = await axios.get(`${API_URL}/profile-controller/profile`, {
+    const profileResponse = await axios.get(`${API_URL}/profile`, {
       headers: { Authorization: `Bearer ${authToken}` }
     });
     

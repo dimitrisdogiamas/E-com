@@ -31,6 +31,9 @@ model User {
   cart Cart[]
 
   Review Review[]
+
+  @@index([role])
+  @@index([createdAt])
 }
 
 model Product {
@@ -46,6 +49,13 @@ model Product {
   updatedAt   DateTime         @updatedAt
 
   wishListItems WishListItem[] // Σχέση με το μοντέλο WishListItem
+
+  @@index([category])
+  @@index([price])
+  @@index([createdAt])
+  @@index([name])
+  @@index([category, price])
+  @@fulltext([name, description])
 }
 
 model ProductImage {
@@ -121,6 +131,11 @@ model Review {
   rating    Int      @default(1) // βαθμολογία του προϊόντος
   comment   String
   createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
 }
 
 enum orderStatus {
@@ -146,6 +161,11 @@ model Order {
   shippingAddress  String
   shippingPhone    String
   items            OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
 }
 
 model OrderItem {
@@ -179,6 +199,13 @@ model ChatMessage {
   timestamp  DateTime    @default(now())
   deletedAt  DateTime? // optional για να κρατάμε το timestamp του διαγραμμένου μηνύματος
   editedAt   DateTime? // optional για να κάνει ο χρήστης edit το μήνυμα
+
+  @@index([roomId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([timestamp])
+  @@index([isRead])
+  @@index([roomId, timestamp])
 }
 
 // TEMPORARILY REMOVED Category model to avoid migration issues
