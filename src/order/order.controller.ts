@@ -39,4 +39,9 @@ export class OrderController {
   ) {
     return this.orderService.updateOrderStatus(id, status);
   }
-} 
+
+  @Get('check-stock/:variantId')
+  async checkStock(@Param('variantId') variantId: string) {
+    return this.orderService.checkVariantStock(variantId);
+  }
+}
