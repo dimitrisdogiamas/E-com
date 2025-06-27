@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/app/components/context/AuthContext';
 import { useCart } from '@/app/components/context/CartContext';
-import { getCart, updateCartItem, removeFromCart, clearCart, type CartItem } from '@/app/services/cartService';
+import { getCart, updateCartItem, removeFromCart, clearCart, validateCartStock, type CartItem } from '@/app/services/cartService';
 import { Container, Typography, Button, Card, CardContent, Grid, IconButton, Box, useTheme, Alert, CircularProgress, Snackbar } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useRouter } from 'next/navigation';
+import { CartStockWarning } from '../components/product/StockIndicator';
 
 export default function CartPage() {
   const { user, token } = useAuth();
@@ -21,6 +22,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [stockValidation, setStockValidation] = useState<{ valid: boolean; issues: string[] }>({ valid: true, issues: [] });
 
   useEffect(() => {
     const loadCart = async () => {
@@ -33,6 +35,12 @@ export default function CartPage() {
 
         const cartData = await getCart(token);
         setCartItems(cartData.items || []);
+        
+        // Validate stock for cart items
+        if (cartData.items && cartData.items.length > 0) {
+          const validation = await validateCartStock(token);
+          setStockValidation(validation);
+        }
       } catch (error) {
         console.error('Failed to load cart:', error);
         setError('Failed to load cart');
@@ -172,6 +180,20 @@ export default function CartPage() {
         </Card>
       ) : (
         <>
+          {/* Global stock validation warnings */}
+          {!stockValidation.valid && (
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                ⚠️ Stock Issues Detected:
+              </Typography>
+              {stockValidation.issues.map((issue, index) => (
+                <Typography key={index} variant="body2">
+                  • {issue}
+                </Typography>
+              ))}
+            </Alert>
+          )}
+
           <Grid container spacing={2}>
             {cartItems.map((item) => (
               <Grid item xs={12} key={item.id}>
@@ -224,6 +246,11 @@ export default function CartPage() {
                         <Typography variant="body2" color="text.secondary">
                           SKU: {item.variant.sku}
                         </Typography>
+                        {/* Stock warning for this item */}
+                        <CartStockWarning 
+                          stock={item.variant.stock} 
+                          requestedQuantity={item.quantity} 
+                        />
                       </Grid>
                       
                       <Grid item xs={12} sm={2}>
@@ -309,8 +336,9 @@ export default function CartPage() {
                     color="primary"
                     onClick={() => router.push('/checkout')}
                     startIcon={<ShoppingCartIcon />}
+                    disabled={!stockValidation.valid}
                   >
-                    Proceed to Checkout
+                    {stockValidation.valid ? 'Proceed to Checkout' : 'Fix Stock Issues First'}
                   </Button>
                 </Grid>
               </Grid>

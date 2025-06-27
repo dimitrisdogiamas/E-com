@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: nextbuy-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME:-nextbuy}
+      MYSQL_USER: ${DATABASE_USER:-nextbuy_user}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:-nextbuy123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - nextbuy-network
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis for Caching (Optional)
+  redis:
+    image: redis:7-alpine
+    container_name: nextbuy-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - nextbuy-network
+
+  # NextBuy Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextbuy-backend
+    restart: unless-stopped
+    ports:
+      - '4001:4001'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=mysql://${DATABASE_USER:-nextbuy_user}:${DATABASE_PASSWORD:-nextbuy123}@mysql:3306/${DATABASE_NAME:-nextbuy}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env:ro
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - nextbuy-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NextBuy Frontend (Optional for full-stack development)
+  frontend:
+    build:
+      context: ./front-end/nextbuy
+      dockerfile: Dockerfile
+    container_name: nextbuy-frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:4001
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+    depends_on:
+      - backend
+    networks:
+      - nextbuy-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  nextbuy-network:
+    driver: bridge

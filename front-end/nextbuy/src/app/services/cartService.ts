@@ -54,6 +54,13 @@ export async function getCart(token: string): Promise<Cart> {
 
 export async function addToCart(token: string, variantId: string, quantity: number): Promise<Cart> {
   try {
+    // Check stock availability before adding to cart
+    const stockInfo = await checkVariantStock(token, variantId);
+    
+    if (stockInfo.stock < quantity) {
+      throw new Error(`Insufficient stock. Available: ${stockInfo.stock}, Requested: ${quantity}`);
+    }
+
     const response = await axios.post(`${API_URL}/cart/add`, 
       { variantId, quantity },
       {
@@ -66,6 +73,9 @@ export async function addToCart(token: string, variantId: string, quantity: numb
     return response.data;
   } catch (error) {
     console.error('Add to cart error:', error);
+    if (error.message.includes('Insufficient stock')) {
+      throw error; // Re-throw stock error with original message
+    }
     throw new Error('Failed to add item to cart');
   }
 }
@@ -113,6 +123,61 @@ export async function clearCart(token: string): Promise<Cart> {
   } catch (error) {
     console.error('Clear cart error:', error);
     throw new Error('Failed to clear cart');
+  }
+}
+
+// Stock management functions
+export interface StockInfo {
+  variantId: string;
+  stock: number;
+  sku: string;
+  productName: string;
+}
+
+export async function checkVariantStock(token: string, variantId: string): Promise<StockInfo> {
+  try {
+    const response = await axios.get(`${API_URL}/orders/check-stock/${variantId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Check stock error:', error);
+    throw new Error('Failed to check stock availability');
+  }
+}
+
+export async function checkMultipleVariantsStock(token: string, variantIds: string[]): Promise<StockInfo[]> {
+  try {
+    const stockPromises = variantIds.map(id => checkVariantStock(token, id));
+    return await Promise.all(stockPromises);
+  } catch (error) {
+    console.error('Check multiple stocks error:', error);
+    throw new Error('Failed to check stock for multiple variants');
+  }
+}
+
+// Helper function to validate cart items stock
+export async function validateCartStock(token: string): Promise<{ valid: boolean; issues: string[] }> {
+  try {
+    const cart = await getCart(token);
+    const issues: string[] = [];
+    
+    for (const item of cart.items) {
+      const stockInfo = await checkVariantStock(token, item.variant.id);
+      
+      if (stockInfo.stock < item.quantity) {
+        issues.push(
+          `${stockInfo.productName}: Only ${stockInfo.stock} available, but ${item.quantity} in cart`
+        );
+      }
+    }
+    
+    return { valid: issues.length === 0, issues };
+  } catch (error) {
+    console.error('Validate cart stock error:', error);
+    return { valid: false, issues: ['Failed to validate cart stock'] };
   }
 }
 

@@ -17,6 +17,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Link from 'next/link';
 import { useState } from 'react';
+import { ProductStockBadge } from './StockIndicator';
 
 interface ProductCardProps {
   product: {
@@ -28,6 +29,11 @@ interface ProductCardProps {
     images: { url: string }[];
     averageRating?: number;
     reviewCount?: number;
+    variants?: {
+      id: string;
+      stock: number;
+      sku: string;
+    }[];
   };
   onAddToCart?: (productId: string) => void;
   onToggleWishlist?: (productId: string) => void;
@@ -41,6 +47,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isInWishlist = false,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Calculate total stock from all variants
+  const totalStock = product.variants?.reduce((sum, variant) => sum + variant.stock, 0) || 0;
+  const hasStock = totalStock > 0;
 
   return (
     <Card
@@ -113,12 +123,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           }}
         />
 
+        {/* Stock Badge */}
+        {product.variants && product.variants.length > 0 && (
+          <ProductStockBadge stock={totalStock} />
+        )}
+
         {/* Quick Add to Cart Button */}
         <Fade in={isHovered}>
           <Button
             variant="contained"
             startIcon={<ShoppingCartIcon />}
             onClick={() => onAddToCart?.(product.id)}
+            disabled={!hasStock}
             sx={{
               position: 'absolute',
               bottom: 8,
@@ -127,9 +143,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               borderRadius: 3,
               textTransform: 'none',
               fontWeight: 600,
+              opacity: hasStock ? 1 : 0.6,
             }}
           >
-            Add to Cart
+            {hasStock ? 'Add to Cart' : 'Out of Stock'}
           </Button>
         </Fade>
       </Box>

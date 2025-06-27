@@ -109,18 +109,27 @@ export function useSocket(): UseSocketReturn {
       `🔍 useSocket: Creating new socket connection for user: ${user.email}`,
     );
 
-    // Create socket connection
-    const newSocket = io('http://localhost:4001', {
+    // Create socket connection with dynamic URL
+    const socketUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+    console.log('🔗 Connecting to WebSocket server:', socketUrl);
+    console.log('🔑 Using token:', token ? 'Present' : 'Missing');
+    console.log('👤 User ID:', user.id);
+
+    const newSocket = io(socketUrl, {
       auth: {
         token,
         userId: user.id,
       },
+      query: {
+        token, // Also pass token in query as fallback
+      },
       transports: ['websocket', 'polling'],
-      timeout: 10000,
+      timeout: 20000, // Increase timeout
       forceNew: true,
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 10, // More attempts
+      reconnectionDelay: 2000, // Longer delay
+      reconnectionDelayMax: 5000,
     });
 
     // set the socket ref value to the new socket

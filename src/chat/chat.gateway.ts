@@ -23,14 +23,18 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin:
-      // if the node environment is production then we use the frontend url and the railway app url
-      process.env.NODE_ENV === 'production'
-        ? [process.env.FRONTEND_URL, 'https://nextbuy-frontend.railway.app']
-        : ['http://localhost:3000'],
+    origin: [
+      'http://localhost:3000',
+      'https://localhost:3000',
+      'http://127.0.0.1:3000',
+      process.env.FRONTEND_URL,
+      'https://nextbuy-frontend.railway.app',
+    ].filter(Boolean), // Remove undefined values
     credentials: true,
+    methods: ['GET', 'POST'],
   },
   transports: ['websocket', 'polling'],
+  allowEIO3: true, // Allow Engine.IO v3 clients
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -47,14 +51,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
     try {
       console.log(`🔄 Chat client attempting connection: ${client.id}`);
-      // Extract token from auth header or query
-      const token =
-        client.handshake.auth?.token ||
-        client.handshake.headers?.authorization?.replace('Bearer ', '') ||
-        client.handshake.query?.token;
+      // Extract token from multiple sources with better logging
+      const authToken = client.handshake.auth?.token;
+      const headerToken = client.handshake.headers?.authorization?.replace(
+        'Bearer ',
+        '',
+      );
+      const queryToken = client.handshake.query?.token as string;
+
+      console.log('🔍 Token sources:', {
+        auth: authToken ? 'Present' : 'Missing',
+        header: headerToken ? 'Present' : 'Missing',
+        query: queryToken ? 'Present' : 'Missing',
+      });
+
+      const token = authToken || headerToken || queryToken;
 
       if (!token) {
         console.log(`❌ No token provided for client: ${client.id}`);
+        console.log('🔍 Handshake details:', {
+          auth: client.handshake.auth,
+          query: client.handshake.query,
+          headers: Object.keys(client.handshake.headers),
+        });
         client.emit('auth_error', {
           message: 'No authentication token provided',
         });
