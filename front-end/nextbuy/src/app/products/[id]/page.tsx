@@ -8,7 +8,9 @@ import {
   IconButton, Snackbar, Box, CardMedia,
   Chip, Divider
 } from '@mui/material';
-import { useCartStore } from '@/app/components/cart/cartStore';
+import { useAuth } from '@/app/components/context/AuthContext';
+import { useCart } from '@/app/components/context/CartContext';
+import { addProductToCart } from '@/app/services/cartService';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -32,13 +34,15 @@ type Product = {
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user, token } = useAuth();
+  const { refreshCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const addItem = useCartStore((state) => state.addItem);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     getProductById(id)
@@ -51,20 +55,31 @@ export default function ProductDetailsPage() {
     setQuantity(prev => Math.max(1, prev + change));
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!token) {
+      setError('Please login to add items to cart');
+      return;
+    }
+
     if (product) {
-      addItem({
-        id: parseInt(product.id, 10), //convert the string of the id to a number
-        name: product.name,
-        price: product.price,
-        quantity
-      });
-      setShowSnackbar(true);
+      setAddingToCart(true);
+      try {
+        await addProductToCart(product.id, quantity, token);
+        await refreshCart();
+        setShowSnackbar(true);
+        setError(""); // Clear any previous errors
+      } catch (error) {
+        console.error('Add to cart error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to add to cart';
+        setError(errorMessage);
+      } finally {
+        setAddingToCart(false);
+      }
     }
   };
 
   if (loading) return <Container sx={{ mt: 4 }}><CircularProgress /></Container>
-  if (error) return <Container sx={{ mt: 4 }}><Alert severity="error">{error}</Alert></Container>
+  if (!product && !loading) return <Container sx={{ mt: 4 }}><Alert severity="error">Product not found</Alert></Container>
   if (!product) return null;
 
   return (
@@ -169,6 +184,18 @@ export default function ProductDetailsPage() {
                 
                 <Divider sx={{ my: 3 }} />
                 
+                {error && (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                  </Alert>
+                )}
+                
+                {!user && (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    Please <Button onClick={() => router.push('/auth/login')}>login</Button> to add items to cart
+                  </Alert>
+                )}
+                
                 <Typography variant="h6" gutterBottom>
                   Quantity
                 </Typography>
@@ -206,13 +233,14 @@ export default function ProductDetailsPage() {
                 <Button
                   variant="contained"
                   color="primary"
-                  startIcon={<ShoppingCartIcon />}
+                  startIcon={addingToCart ? <CircularProgress size={20} /> : <ShoppingCartIcon />}
                   onClick={handleAddToCart}
+                  disabled={addingToCart || !user}
                   fullWidth
                   size="large"
                   sx={{ mb: 2, py: 1.5 }}
                 >
-                  Add to Cart
+                  {addingToCart ? 'Adding to Cart...' : 'Add to Cart'}
                 </Button>
                 <Button
                   variant="outlined"

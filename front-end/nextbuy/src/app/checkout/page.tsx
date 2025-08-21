@@ -1,6 +1,6 @@
 'use client';
 
-import { useCartStore } from '@/app/components/cart/cartStore';
+import { useCart } from '@/app/components/context/CartContext';
 import { useState } from 'react';
 import {
   Container,
@@ -27,9 +27,11 @@ import { useAuth } from '@/app/components/context/AuthContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, clearCart } = useCartStore();
+  const { cart, refreshCart, clearCart } = useCart();
   const { token } = useAuth();
-  const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  
+  const items = cart?.items || [];
+  const total = cart?.total || 0;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -81,7 +83,12 @@ export default function CheckoutPage() {
     setSuccess(false);
 
     const orderData = {
-      items,
+      items: items.map(item => ({
+        id: parseInt(item.id.slice(0, 8), 16), // Convert string ID to number (dummy)
+        name: item.variant.product.name,
+        quantity: item.quantity,
+        price: item.variant.price || item.variant.product.price
+      })),
       total,
       shippingDetails: {
         fullName: formData.fullName,
@@ -92,9 +99,9 @@ export default function CheckoutPage() {
     };
 
     try {
-      await createOrder(orderData, token);
+      await createOrder(orderData, token!);
       setSuccess(true);
-      clearCart();
+      await clearCart(); // Clear the cart from backend
       setTimeout(() => {
         router.push('/orders');
       }, 2000);
@@ -111,7 +118,12 @@ export default function CheckoutPage() {
     setLoading(true);
 
     const orderData = {
-      items,
+      items: items.map(item => ({
+        id: parseInt(item.id.slice(0, 8), 16), // Convert string ID to number (dummy)
+        name: item.variant.product.name,
+        quantity: item.quantity,
+        price: item.variant.price || item.variant.product.price
+      })),
       total,
       shippingDetails: {
         fullName: formData.fullName,
@@ -123,9 +135,9 @@ export default function CheckoutPage() {
     };
 
     try {
-      await createOrder(orderData, token);
+      await createOrder(orderData, token!);
       setSuccess(true);
-      clearCart();
+      await clearCart(); // Clear the cart from backend
       setTimeout(() => {
         router.push('/orders');
       }, 2000);
@@ -182,12 +194,12 @@ export default function CheckoutPage() {
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
                         <Typography>
-                          {item.name} x {item.quantity}
+                          {item.variant.product.name} ({item.variant.size.name}, {item.variant.color.name}) x {item.quantity}
                         </Typography>
                       </Grid>
                       <Grid item>
                         <Typography>
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ${((item.variant.price || item.variant.product.price) * item.quantity).toFixed(2)}
                         </Typography>
                       </Grid>
                     </Grid>

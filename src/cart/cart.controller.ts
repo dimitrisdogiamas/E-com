@@ -23,9 +23,12 @@ export class CartController {
     @Request() req: any,
     @Body() body: { variantId: string; quantity: number }
   ) {
+    console.log('addToCart controller called');
+    console.log('Request body:', body);
     console.log('User from token:', req.user);
     const userId = req.user.id;
     console.log('Extracted userId:', userId);
+    console.log('Adding to cart - userId:', userId, 'variantId:', body.variantId, 'quantity:', body.quantity);
     return this.cartService.addToCart(userId, body.variantId, body.quantity);
   }
 

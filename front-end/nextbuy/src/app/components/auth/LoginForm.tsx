@@ -18,7 +18,7 @@ const LoginForm: React.FC = () => {
       const res = await login(email, password)
       
       // θα αποθηκεύουμε το token στο local storage
-      localStorage.setItem('token', res.token);
+      localStorage.setItem('token', res.accessToken);
       //redirect to the home page
       window.location.href="/"
     } catch (err: unknown) {

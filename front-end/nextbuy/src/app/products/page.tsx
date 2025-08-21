@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getAllProducts } from '@/app/services/productService';
-import { addToCart } from '@/app/services/cartService';
+import { addProductToCart } from '@/app/services/cartService';
 import { addToWishlist, removeFromWishlist, getWishlist } from '@/app/services/wishlistService';
 import { useAuth } from '@/app/components/context/AuthContext';
 import { useCart } from '@/app/components/context/CartContext';
@@ -70,32 +70,20 @@ export default function ProductsPage() {
     }
 
     try {
-      // Find the product to get its first variant
+      // Find the product name for the success message
       const product = products.find(p => p.id === productId);
-      if (!product) {
-        setNotification({ message: 'Product not found', type: 'error' });
-        return;
-      }
-
-      // For now, we'll get the first available variant
-      // In a real app, user would select size/color first
-      const response = await fetch(`http://localhost:4001/products/${productId}`);
-      const productDetails = await response.json();
       
-      if (productDetails.variants && productDetails.variants.length > 0) {
-        const firstVariant = productDetails.variants[0];
-        await addToCart(token, firstVariant.id, 1);
-        
-        // Refresh the cart context to update the cart count in navbar
-        await refreshCart();
-        
-        setNotification({ message: `${product.name} added to cart!`, type: 'success' });
-      } else {
-        setNotification({ message: 'No variants available for this product', type: 'error' });
-      }
+      // Use the helper function that automatically handles variants
+      await addProductToCart(productId, 1, token);
+      
+      // Refresh the cart context to update the cart count in navbar
+      await refreshCart();
+      
+      setNotification({ message: `${product?.name || 'Product'} added to cart!`, type: 'success' });
     } catch (error) {
       console.error('Add to cart error:', error);
-      setNotification({ message: 'Failed to add item to cart', type: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add item to cart';
+      setNotification({ message: errorMessage, type: 'error' });
     }
   };
 

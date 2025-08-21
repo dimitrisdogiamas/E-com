@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4001';
+import { API_CONFIG } from '../config/api';
+const API_URL = API_CONFIG.BASE_URL;
 
 export interface CartItem {
   id: string;
@@ -43,7 +44,9 @@ export async function getCart(token: string): Promise<Cart> {
     const response = await axios.get(`${API_URL}/cart`, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       },
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -67,13 +70,15 @@ export async function addToCart(token: string, variantId: string, quantity: numb
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        withCredentials: true
       }
     );
     return response.data;
   } catch (error) {
     console.error('Add to cart error:', error);
-    if (error.message.includes('Insufficient stock')) {
+    if (error instanceof Error && error.message.includes('Insufficient stock')) {
       throw error; // Re-throw stock error with original message
     }
     throw new Error('Failed to add item to cart');
@@ -117,7 +122,9 @@ export async function clearCart(token: string): Promise<Cart> {
     const response = await axios.delete(`${API_URL}/cart/clear`, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       },
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -184,18 +191,39 @@ export async function validateCartStock(token: string): Promise<{ valid: boolean
 // Helper function to add product to cart by productId (gets first variant automatically)
 export async function addProductToCart(productId: string, quantity: number, token: string): Promise<Cart> {
   try {
+    console.log('Fetching product details for:', productId);
     // Get product details to find first variant
     const response = await fetch(`${API_URL}/products/${productId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch product: ${response.status} ${response.statusText}`);
+    }
+    
     const productDetails = await response.json();
+    console.log('Product details received:', { 
+      id: productDetails.id, 
+      name: productDetails.name, 
+      variantsCount: productDetails.variants?.length || 0 
+    });
     
     if (productDetails.variants && productDetails.variants.length > 0) {
-      const firstVariant = productDetails.variants[0];
-      return await addToCart(token, firstVariant.id, quantity);
+      // Find first variant with stock > 0
+      const firstAvailableVariant = productDetails.variants.find((v: any) => v.stock > 0) || productDetails.variants[0];
+      console.log('Using variant:', { 
+        id: firstAvailableVariant.id, 
+        sku: firstAvailableVariant.sku, 
+        stock: firstAvailableVariant.stock 
+      });
+      
+      return await addToCart(token, firstAvailableVariant.id, quantity);
     } else {
-      throw new Error('No variants available for this product');
+      throw new Error(`No variants available for product: ${productDetails.name || productId}`);
     }
   } catch (error) {
     console.error('Add product to cart error:', error);
-    throw new Error('Failed to add product to cart');
+    if (error instanceof Error && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to fetch product details');
+    }
+    throw error; // Re-throw with original message
   }
 } 

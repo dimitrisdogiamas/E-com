@@ -220,7 +220,7 @@ export default function OrderDetailPage() {
                       <ListItemText
                         primary={
                           <Typography variant="h6">
-                            Item #{item.variantId}
+                            Item #{item.variant.id}
                           </Typography>
                         }
                         secondary={

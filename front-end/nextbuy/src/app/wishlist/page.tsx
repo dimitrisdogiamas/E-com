@@ -83,13 +83,14 @@ export default function WishlistPage() {
 
     setAddingToCart(productId);
     try {
-      //calling the function to add the product to the cart
+      console.log('Adding single product to cart:', productId);
       await addProductToCart(productId, 1, token);
       await refreshCart();
       setNotification({ message: 'Added to cart successfully', type: 'success' });
     } catch (error) {
       console.error('Add to cart error:', error);
-      setNotification({ message: 'Failed to add to cart', type: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add to cart';
+      setNotification({ message: errorMessage, type: 'error' });
     } finally {
       setAddingToCart(null);
     }
@@ -108,10 +109,15 @@ export default function WishlistPage() {
 
     setLoading(true);
     try {
-      // Add all wishlist items to cart
+      // Add all wishlist items to cart one by one
+      const addPromises = [];
       for (const item of wishlistItems) {
-        await addProductToCart(item.productId, 1, token);
+        console.log('Adding wishlist item to cart:', item.productId);
+        addPromises.push(addProductToCart(item.productId, 1, token));
       }
+      
+      // Wait for all items to be added
+      await Promise.all(addPromises);
       
       // Refresh cart and redirect to checkout
       await refreshCart();
@@ -123,7 +129,8 @@ export default function WishlistPage() {
       }, 1000);
     } catch (error) {
       console.error('Proceed to checkout error:', error);
-      setNotification({ message: 'Failed to add items to cart', type: 'error' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add items to cart';
+      setNotification({ message: errorMessage, type: 'error' });
     } finally {
       setLoading(false);
     }

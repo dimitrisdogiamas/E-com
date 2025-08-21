@@ -1,13 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getCart, type Cart } from '@/app/services/cartService';
+import { getCart, clearCart as clearCartAPI, type Cart } from '@/app/services/cartService';
 import { useAuth } from './AuthContext';
 
 interface CartContextType {
   cart: Cart | null;
   cartItemsCount: number;
   refreshCart: () => Promise<void>;
+  clearCart: () => Promise<void>;
   setCartItemsCount: (count: number) => void;
 }
 
@@ -40,6 +41,17 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   };
 
+  const clearCart = async () => {
+    if (user && token) {
+      try {
+        await clearCartAPI(token);
+        await refreshCart(); // Refresh to get updated state
+      } catch (error) {
+        console.error('Failed to clear cart:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     refreshCart();
   }, [user, token]);
@@ -49,6 +61,7 @@ export function CartProvider({ children }: CartProviderProps) {
       cart,
       cartItemsCount,
       refreshCart,
+      clearCart,
       setCartItemsCount
     }}>
       {children}

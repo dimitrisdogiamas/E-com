@@ -10,13 +10,33 @@ async function bootstrap() {
   const corsOrigins =
     process.env.NODE_ENV === 'production'
       ? [process.env.FRONTEND_URL, 'https://nextbuy-frontend.railway.app']
-      : ['http://localhost:3000'];
+      : ['http://localhost:3000', 'http://127.0.0.1:3000', 'file://', 'null'];
+
+  console.log('CORS origins configured:', corsOrigins);
 
   // enable cors for the frontend
   app.enableCors({
-    origin: corsOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or Postman)
+      if (!origin) return callback(null, true);
+      
+      if (corsOrigins.includes(origin) || origin.startsWith('file://')) {
+        return callback(null, true);
+      }
+      
+      // For development, allow any localhost origin
+      if (process.env.NODE_ENV !== 'production' && 
+          (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+        return callback(null, true);
+      }
+      
+      console.log('CORS blocked origin:', origin);
+      return callback(new Error('Not allowed by CORS'), false);
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
+    optionsSuccessStatus: 200
   });
 
   // Global validation pipe
