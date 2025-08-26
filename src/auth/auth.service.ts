@@ -58,7 +58,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
     return {
@@ -67,6 +67,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
       },
     };
   }
@@ -92,7 +93,7 @@ export class AuthService {
     });
 
     // Generate token for the new user
-    const payload = { sub: newUser.id, email: newUser.email };
+    const payload = { sub: newUser.id, email: newUser.email, role: newUser.role };
     const accessToken = this.jwtService.sign(payload);
 
     // Return user without password and include token

@@ -47,7 +47,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       request.user = {
         id: user.id,
         email: user.email,
-        roles: [user.role], // Convert single role to array for RolesGuard
+        role: user.role, // Keep as single role
       };
       return true;
     } catch (error) {

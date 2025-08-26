@@ -21,12 +21,68 @@ export class AdminService {
       where: { status: 'PENDING' },
     });
 
+    // Calculate monthly revenue (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const monthlyRevenue = await this.prisma.order.aggregate({
+      _sum: {
+        totalAmount: true,
+      },
+      where: {
+        createdAt: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+
+    // Get recent orders (last 5)
+    const recentOrders = await this.prisma.order.findMany({
+      take: 5,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Get top categories
+    const topCategories = await this.prisma.product.groupBy({
+      by: ['category'],
+      _count: {
+        category: true,
+      },
+      orderBy: {
+        _count: {
+          category: 'desc',
+        },
+      },
+      take: 5,
+    });
+
     return {
       totalUsers,
       totalProducts,
       totalOrders,
       totalRevenue: totalRevenue._sum.totalAmount || 0,
       pendingOrders,
+      monthlyRevenue: monthlyRevenue._sum.totalAmount || 0,
+      recentOrders: recentOrders.map(order => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        createdAt: order.createdAt.toISOString(),
+        user: order.user,
+      })),
+      topCategories: topCategories.map(cat => ({
+        category: cat.category,
+        count: cat._count.category,
+      })),
     };
   }
 
