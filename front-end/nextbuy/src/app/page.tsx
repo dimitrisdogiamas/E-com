@@ -105,7 +105,7 @@ export default function HomePage() {
 
       // For now, we'll get the first available variant
       // In a real app, user would select size/color first
-      const response = await fetch(`http://localhost:4001/products/${productId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-a996.up.railway.app'}/products/${productId}`);
       const productDetails = await response.json();
       
       if (productDetails.variants && productDetails.variants.length > 0) {
