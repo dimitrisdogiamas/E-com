@@ -19,7 +19,7 @@ model User {
   name             String
   password         String
   provider         String? // πάροχος που κάνει το login
-  role             String         @default("user") // εδώ προσθέτουμε το role 
+  role             String         @default("user") // εδώ προσθέτουμε το role
   providerId       String? // Id απο τον πάροχο
   orders           Order[] // Σχέση με το μοντελο Οrder
   sentMessages     ChatMessage[]  @relation("SentMessages")
@@ -37,10 +37,10 @@ model User {
 }
 
 model Product {
-  id          String           @id @default(uuid()) // unique identifier of the product 
+  id          String           @id @default(uuid()) // unique identifier of the product
   name        String
   description String
-  price       Float // price of the product 
+  price       Float // price of the product
   category    String // Category field using string for now
   variants    ProductVariant[] @relation("ProductVariants") // Σχέση με το μοντέλο productVariant
   images      ProductImage[]   @relation("ProductImages") // Σχέση με το μοντέλο ProductImage
@@ -60,7 +60,7 @@ model Product {
 
 model ProductImage {
   id        String  @id @default(uuid())
-  url       String // store the image URL or the path 
+  url       String // store the image URL or the path
   product   Product @relation("ProductImages", fields: [productId], references: [id])
   productId String
 }
