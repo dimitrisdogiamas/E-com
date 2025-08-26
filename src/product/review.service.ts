@@ -1,11 +1,20 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ReviewService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProductReviews(productId: string, page: number = 1, limit: number = 10) {
+  async getProductReviews(
+    productId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const skip = (page - 1) * limit;
 
     const [reviews, total] = await Promise.all([
@@ -44,7 +53,12 @@ export class ReviewService {
     };
   }
 
-  async createReview(userId: string, productId: string, rating: number, comment: string) {
+  async createReview(
+    userId: string,
+    productId: string,
+    rating: number,
+    comment: string,
+  ) {
     // Validate rating
     if (rating < 1 || rating > 5) {
       throw new BadRequestException('Rating must be between 1 and 5');
@@ -86,7 +100,12 @@ export class ReviewService {
     });
   }
 
-  async updateReview(reviewId: string, userId: string, rating?: number, comment?: string) {
+  async updateReview(
+    reviewId: string,
+    userId: string,
+    rating?: number,
+    comment?: string,
+  ) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
@@ -151,4 +170,4 @@ export class ReviewService {
       orderBy: { createdAt: 'desc' },
     });
   }
-} 
+}

@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { register } from '@/app/services/authService';
+import { useAuth } from '@/app/components/context/AuthContext';
 import OAuthButtons from '@/app/components/auth/OAuthButtons';
 
 export default function RegisterPage() {
@@ -25,6 +26,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +34,22 @@ export default function RegisterPage() {
     setError(null);
     
     try {
-      await register(email, password, name);
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/auth/login');
-      }, 2000);
+      const registrationData = await register(email, password, name);
+      
+      // Auto-login the user with the returned token and user data
+      if (registrationData?.accessToken && registrationData?.user) {
+        await login(email, password, registrationData.accessToken, registrationData.user);
+        setSuccess(true);
+        setTimeout(() => {
+          router.push('/'); // Redirect to homepage
+        }, 1500);
+      } else {
+        // Fallback to login page if no token returned
+        setSuccess(true);
+        setTimeout(() => {
+          router.push('/auth/login');
+        }, 2000);
+      }
     } catch (error: unknown) {
       if (
         error &&
@@ -61,7 +74,7 @@ export default function RegisterPage() {
             Registration Successful!
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Redirecting to login page...
+            Redirecting to homepage...
           </Typography>
         </Paper>
       </Container>

@@ -11,4 +11,4 @@ import { EmailModule } from '../email/email.module';
   providers: [OrderService, PrismaService],
   exports: [OrderService],
 })
-export class OrderModule {} 
+export class OrderModule {}

@@ -91,9 +91,16 @@ export class AuthService {
       this.logger.error('Failed to send welcome email:', error);
     });
 
-    // Return user without password
+    // Generate token for the new user
+    const payload = { sub: newUser.id, email: newUser.email };
+    const accessToken = this.jwtService.sign(payload);
+
+    // Return user without password and include token
     const { password: _, ...userWithoutPassword } = newUser; // eslint-disable-line @typescript-eslint/no-unused-vars
-    return userWithoutPassword;
+    return {
+      accessToken,
+      user: userWithoutPassword,
+    };
   }
 
   private async sendWelcomeEmail(user: { name: string; email: string }) {

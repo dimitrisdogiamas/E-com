@@ -249,7 +249,7 @@ The NextBuy Team
   private generateAdminOrderTemplate(data: OrderEmailData): EmailTemplate {
     const itemsText = data.items
       .map(
-         (item) => `- ${item.name} (${item.quantity}x) 
+        (item) => `- ${item.name} (${item.quantity}x) 
       - $${(item.quantity * item.price).toFixed(2)}`,
       )
       .join('\n');

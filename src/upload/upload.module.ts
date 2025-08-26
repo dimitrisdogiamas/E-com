@@ -17,7 +17,13 @@ import { AuthModule } from '../auth/auth.module';
       },
       fileFilter: (req, file, cb) => {
         // Allow only specific image types
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        const allowedTypes = [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+        ];
         if (allowedTypes.includes(file.mimetype)) {
           cb(null, true);
         } else {
@@ -30,4 +36,4 @@ import { AuthModule } from '../auth/auth.module';
   providers: [UploadService],
   exports: [UploadService],
 })
-export class UploadModule {} 
+export class UploadModule {}

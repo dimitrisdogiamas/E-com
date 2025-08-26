@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/jwt-auth/jwt-auth.guard';
 
@@ -21,14 +30,21 @@ export class CartController {
   @UseGuards(JwtAuthGuard)
   async addToCart(
     @Request() req: any,
-    @Body() body: { variantId: string; quantity: number }
+    @Body() body: { variantId: string; quantity: number },
   ) {
     console.log('addToCart controller called');
     console.log('Request body:', body);
     console.log('User from token:', req.user);
     const userId = req.user.id;
     console.log('Extracted userId:', userId);
-    console.log('Adding to cart - userId:', userId, 'variantId:', body.variantId, 'quantity:', body.quantity);
+    console.log(
+      'Adding to cart - userId:',
+      userId,
+      'variantId:',
+      body.variantId,
+      'quantity:',
+      body.quantity,
+    );
     return this.cartService.addToCart(userId, body.variantId, body.quantity);
   }
 
@@ -36,17 +52,21 @@ export class CartController {
   @UseGuards(JwtAuthGuard)
   async updateCartItem(
     @Request() req: any,
-    @Body() body: { variantId: string; quantity: number }
+    @Body() body: { variantId: string; quantity: number },
   ) {
     const userId = req.user.id;
-    return this.cartService.updateCartItem(userId, body.variantId, body.quantity);
+    return this.cartService.updateCartItem(
+      userId,
+      body.variantId,
+      body.quantity,
+    );
   }
 
   @Delete('remove/:variantId')
   @UseGuards(JwtAuthGuard)
   async removeFromCart(
     @Request() req: any,
-    @Param('variantId') variantId: string
+    @Param('variantId') variantId: string,
   ) {
     const userId = req.user.id;
     return this.cartService.removeFromCart(userId, variantId);
@@ -67,4 +87,4 @@ export class CartController {
     const userId = '60de91e8-035b-424a-abd5-68af393218ac';
     return this.cartService.getCart(userId);
   }
-} 
+}

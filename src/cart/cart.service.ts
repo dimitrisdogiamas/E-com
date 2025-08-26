@@ -7,11 +7,11 @@ export class CartService {
 
   async getCart(userId: string) {
     console.log('getCart called with userId:', userId);
-    
+
     if (!userId) {
       throw new Error('User ID is required');
     }
-    
+
     // Find or create cart for user
     let cart = await this.prisma.cart.findFirst({
       where: { userId },
@@ -60,8 +60,10 @@ export class CartService {
 
     // Calculate total
     const total = cart.items.reduce(
-      (sum, item) => sum + (item.variant.price || item.variant.product.price) * item.quantity,
-      0
+      (sum, item) =>
+        sum +
+        (item.variant.price || item.variant.product.price) * item.quantity,
+      0,
     );
 
     return {
@@ -73,8 +75,12 @@ export class CartService {
   }
 
   async addToCart(userId: string, variantId: string, quantity: number) {
-    console.log('CartService.addToCart called with:', { userId, variantId, quantity });
-    
+    console.log('CartService.addToCart called with:', {
+      userId,
+      variantId,
+      quantity,
+    });
+
     // Get or create cart
     let cart = await this.prisma.cart.findFirst({
       where: { userId },
@@ -173,4 +179,4 @@ export class CartService {
 
     return this.getCart(userId);
   }
-} 
+}

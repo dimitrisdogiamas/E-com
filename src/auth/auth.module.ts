@@ -27,13 +27,14 @@ import { PrismaService } from '../prisma/prisma.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, JwtAuthGuard, PrismaService],
-  controllers: [AuthController],
-  exports: [
-    AuthService, 
-    JwtAuthGuard, 
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    JwtAuthGuard,
     PrismaService,
-    JwtModule,
   ],
+  controllers: [AuthController],
+  exports: [AuthService, JwtAuthGuard, PrismaService, JwtModule],
 })
 export class AuthModule {}

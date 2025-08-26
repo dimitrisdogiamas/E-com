@@ -9,5 +9,6 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(email: string, password: string, name: string) {
-  await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH}/register`, {email, password,name})
+  const res = await axios.post(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH}/register`, { email, password, name })
+  return res.data;
 }

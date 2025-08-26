@@ -125,7 +125,9 @@ export class RecommendationService {
         take: limit,
       });
     } catch (error) {
-      throw new Error(`Failed to fetch general recommendations: ${error.message}`);
+      throw new Error(
+        `Failed to fetch general recommendations: ${error.message}`,
+      );
     }
   }
 }
