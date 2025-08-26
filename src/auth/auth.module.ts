@@ -10,6 +10,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from './google.strategy';
 import { JwtAuthGuard } from './jwt-auth/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { OauthController } from './gauth/oauth.controller';
+import { OauthSevice } from './gauth/oauth.service';
+import { GoogleOauthGuard } from './gauth/google-oauth.guard';
+import { GoogleOauthStrategy } from './gauth/google-oauth.strategy';
+import { JwtAuthService } from './jwt-auth/jwt.service';
 
 @Global()
 @Module({
@@ -33,8 +38,12 @@ import { PrismaService } from '../prisma/prisma.service';
     GoogleStrategy,
     JwtAuthGuard,
     PrismaService,
+    OauthSevice,
+    GoogleOauthGuard,
+    GoogleOauthStrategy,
+    JwtAuthService,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, OauthController],
   exports: [AuthService, JwtAuthGuard, PrismaService, JwtModule],
 })
 export class AuthModule {}
