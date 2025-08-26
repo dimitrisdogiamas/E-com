@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_CONFIG } from '../config/api';
 
-const API_URL = 'http://localhost:4001';
+const API_URL = API_CONFIG.BASE_URL;
 
 export interface Profile {
   id: string;
