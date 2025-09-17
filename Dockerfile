@@ -9,13 +9,8 @@ COPY package*.json ./
 # Install dependencies (including dev dependencies for build)
 RUN npm ci && npm cache clean --force
 
-# Copy prisma schema
-COPY prisma ./prisma/
-
-# Copy source code
-COPY src ./src/
-COPY nest-cli.json ./
-COPY tsconfig*.json ./
+# Copy all source files
+COPY . .
 
 # Generate Prisma client
 RUN npx prisma generate
