@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-a996.up.railway.app', // Backend URL
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001', // Backend URL
   headers: {
     'Content-Type': 'application/json',
   },

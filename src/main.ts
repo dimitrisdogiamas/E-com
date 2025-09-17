@@ -1,3 +1,4 @@
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -7,12 +8,15 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // Enable CORS for frontend - handle both development and production
-  const corsOrigins =
-    process.env.NODE_ENV === 'production'
-      ? [process.env.FRONTEND_URL, 'https://nextbuy-frontend.railway.app']
-      : ['http://localhost:3000', 'http://127.0.0.1:3000', 'file://', 'null'];
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'https://nextbuy-frontend.railway.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ].filter(Boolean); // Remove undefined values
 
-  console.log('CORS origins configured:', corsOrigins);
+  console.log('CORS origins configured:', allowedOrigins);
+  console.log('Environment:', process.env.NODE_ENV);
 
   // enable cors for the frontend
   app.enableCors({
@@ -20,7 +24,14 @@ async function bootstrap() {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) return callback(null, true);
 
-      if (corsOrigins.includes(origin) || origin.startsWith('file://')) {
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Allow any .vercel.app or .railway.app domains in production
+      if (process.env.NODE_ENV === 'production' && 
+          (origin.endsWith('.vercel.app') || origin.endsWith('.railway.app'))) {
         return callback(null, true);
       }
 
