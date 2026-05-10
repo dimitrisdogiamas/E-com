@@ -12,7 +12,8 @@ RUN npm ci && npm cache clean --force
 # Copy all source files
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client (dummy URL needed for Prisma 7.x config resolution - no DB connection is made)
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 RUN npx prisma generate
 
 # Build the application
