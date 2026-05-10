@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:20.19-alpine AS builder
 
 WORKDIR /app
 
@@ -18,8 +18,11 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
+# Generate Prisma client (skip config, just use schema)
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
+
 # Production stage
-FROM node:20-alpine AS production
+FROM node:20.19-alpine AS production
 
 WORKDIR /app
 
