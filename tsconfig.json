@@ -22,7 +22,7 @@
     "src/**/*",
     "scripts/**/*",
     "prisma/**/*"
-  ],
+, "prisma.config.ts"  ],
   "exclude": [
     "front-end/**/*",
     "node_modules",
