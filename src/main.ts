@@ -1,4 +1,3 @@
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -12,7 +11,7 @@ async function bootstrap() {
     process.env.FRONTEND_URL,
     'https://nextbuy-frontend.railway.app',
     'http://localhost:3000',
-    'http://127.0.0.1:3000'
+    'http://127.0.0.1:3000',
   ].filter(Boolean); // Remove undefined values
 
   console.log('CORS origins configured:', allowedOrigins);
@@ -30,8 +29,10 @@ async function bootstrap() {
       }
 
       // Allow any .vercel.app or .railway.app domains in production
-      if (process.env.NODE_ENV === 'production' && 
-          (origin.endsWith('.vercel.app') || origin.endsWith('.railway.app'))) {
+      if (
+        process.env.NODE_ENV === 'production' &&
+        (origin.endsWith('.vercel.app') || origin.endsWith('.railway.app'))
+      ) {
         return callback(null, true);
       }
 

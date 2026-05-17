@@ -1,4 +1,5 @@
 node_modules/
 dist/
 .next/
-test-scenarios.js 
+test-scenarios.js
+test/ 

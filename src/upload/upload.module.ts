@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
 import { ConfigModule } from '@nestjs/config';
@@ -11,7 +12,7 @@ import { AuthModule } from '../auth/auth.module';
     AuthModule,
     MulterModule.register({
       // Configure multer for memory storage
-      storage: require('multer').memoryStorage(),
+      storage: memoryStorage(),
       limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit
       },

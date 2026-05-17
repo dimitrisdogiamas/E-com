@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   async findOrCreateGoogleUser(googleUser: any) {
-    const { email, firstName, lastName, picture } = googleUser;
+    const { email, firstName, lastName } = googleUser;
     const name = `${firstName || ''} ${lastName || ''}`.trim() || email;
 
     // Try to find existing user
@@ -93,7 +93,11 @@ export class AuthService {
     });
 
     // Generate token for the new user
-    const payload = { sub: newUser.id, email: newUser.email, role: newUser.role };
+    const payload = {
+      sub: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+    };
     const accessToken = this.jwtService.sign(payload);
 
     // Return user without password and include token

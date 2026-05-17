@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
 describe('ProductService', () => {
   let service: ProductService;
-  let mockPrismaService: Partial<PrismaService>;
+  let mockPrismaService: any;
 
   beforeEach(async () => {
     // we need to mock the values and the methods of Prisma Service
@@ -129,6 +129,25 @@ describe('ProductService', () => {
     //we expect the mockService to have been called
     expect(mockPrismaService.product.findUnique).toHaveBeenCalledWith({
       where: { id: '1' },
+      include: {
+        images: true,
+        variants: {
+          include: {
+            size: true,
+            color: true,
+          },
+        },
+        reviews: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     //then we expect the result

@@ -38,6 +38,13 @@ describe('WishlistService', () => {
 
     expect(prisma.wishListItem.create).toHaveBeenCalledWith({
       data: { userId: 'user1', productId: 'prod1' },
+      include: {
+        product: {
+          include: {
+            images: true,
+          },
+        },
+      },
     });
 
     expect(result).toEqual(mockItem);

@@ -71,7 +71,7 @@ export class AdminService {
       totalRevenue: totalRevenue._sum.totalAmount || 0,
       pendingOrders,
       monthlyRevenue: monthlyRevenue._sum.totalAmount || 0,
-      recentOrders: recentOrders.map(order => ({
+      recentOrders: recentOrders.map((order) => ({
         id: order.id,
         orderNumber: order.orderNumber,
         totalAmount: order.totalAmount,
@@ -79,7 +79,7 @@ export class AdminService {
         createdAt: order.createdAt.toISOString(),
         user: order.user,
       })),
-      topCategories: topCategories.map(cat => ({
+      topCategories: topCategories.map((cat) => ({
         category: cat.category,
         count: cat._count.category,
       })),

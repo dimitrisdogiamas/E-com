@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecommendationService } from './recommendation.service';
+import { PrismaService } from '../../prisma/prisma.service';
 describe('RecommendationService', () => {
   let service: RecommendationService;
   let mockPrismaService: any;
@@ -17,7 +18,7 @@ describe('RecommendationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecommendationService,
-        { provide: 'PrismaService', useValue: mockPrismaService },
+        { provide: PrismaService, useValue: mockPrismaService },
       ],
     }).compile();
 
@@ -64,7 +65,7 @@ describe('RecommendationService', () => {
           },
           { createdAt: 'desc' },
         ],
-        take: 8, // getGeneralRecommendations default
+        take: 10, // getRecommendationsForUser default limit
       });
     });
 
@@ -75,7 +76,7 @@ describe('RecommendationService', () => {
       const mockProducts = [{ id: '2', name: 'Product 2' }];
 
       mockPrismaService.orderItem.findMany
-        .mockResolvedValueOnce(mockOrderItems)  // getUserCategories call
+        .mockResolvedValueOnce(mockOrderItems) // getUserCategories call
         .mockResolvedValueOnce([{ variantId: 'v1' }]); // getUserPurchasedProducts call
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
 
