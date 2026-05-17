@@ -1,111 +1,95 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecommendationService } from './recommendation.service';
-import { PrismaService } from '../../prisma/prisma.service';
 describe('RecommendationService', () => {
   let service: RecommendationService;
+  let mockPrismaService: any;
 
-  const mockPrismaService = {
-    product: {
-      findMany: jest.fn(),
-    },
-    orderItem: {
-      findMany: jest.fn(),
-    },
-  };
   beforeEach(async () => {
+    mockPrismaService = {
+      product: {
+        findMany: jest.fn(),
+      },
+      orderItem: {
+        findMany: jest.fn(),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecommendationService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
+        { provide: 'PrismaService', useValue: mockPrismaService },
       ],
     }).compile();
 
     service = module.get<RecommendationService>(RecommendationService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('getGeneralRecommendations', () => {
+    it('should return popular products ordered by reviews and date', async () => {
+      const mockProducts = [{ id: '1', name: 'Product 1' }];
+      mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
+
+      const result = await service.getGeneralRecommendations(10);
+
+      expect(result).toEqual(mockProducts);
+      expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
+        include: { images: true, reviews: true, variants: true },
+        orderBy: [
+          {
+            reviews: { _count: 'desc' },
+          },
+          { createdAt: 'desc' },
+        ],
+        take: 10,
+      });
+    });
   });
 
   describe('getRecommendationForUser', () => {
-    it('should return top porducts when user has no categories', async () => {
-      //mock getUserCategories to return empty array
-      jest.spyOn(service as any, 'getUserCategories').mockResolvedValue([]);
+    it('should return top products when user has no categories', async () => {
+      const mockProducts = [{ id: '1', name: 'Product 1' }];
 
-      // mock prisma product findMany to return mock products
-      const mockProducts = [{ id: 1, name: 'Product 1 ' }];
-      // οπότε το mockPrismaService θα επιστρέφει το mockProducts
+      // No order history
+      mockPrismaService.orderItem.findMany.mockResolvedValue([]);
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
 
-      // call the service
       const result = await service.getRecommendationsForUser('user1');
 
-      // assert the result
       expect(result).toEqual(mockProducts);
-
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
-        where: {
-          category: 'all',
-        },
-        include: {
-          images: true,
-          reviews: true,
-          variants: true,
-        },
-        orderBy: {
-          reviews: {
-            _count: 'desc',
+        include: { images: true, reviews: true, variants: true },
+        orderBy: [
+          {
+            reviews: { _count: 'desc' },
           },
-        },
+          { createdAt: 'desc' },
+        ],
+        take: 8, // getGeneralRecommendations default
       });
     });
-    it('should return recommendations based on user categories', async () => {
-      // mock getUserCategories to return mock categories
-      const mockCategories = ['category1', 'category2'];
-      const mockPurchasedProducts = [{ variantId: 1 }];
-      const mockRecommendations = [{ id: 1, name: 'Product 1' }];
 
-      jest
-        .spyOn(service as any, 'getUserCategories')
-        .mockResolvedValue(mockCategories);
+    it('should return category-based recommendations when user has order history', async () => {
+      const mockOrderItems = [
+        { variant: { product: { category: 'electronics' } } },
+      ];
+      const mockProducts = [{ id: '2', name: 'Product 2' }];
 
-      jest
-        .spyOn(service as any, 'getUserPurchasedProducts')
-        .mockResolvedValue(mockPurchasedProducts);
-
-      mockPrismaService.product.findMany.mockResolvedValue(mockRecommendations);
+      mockPrismaService.orderItem.findMany
+        .mockResolvedValueOnce(mockOrderItems)  // getUserCategories call
+        .mockResolvedValueOnce([{ variantId: 'v1' }]); // getUserPurchasedProducts call
+      mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
 
       const result = await service.getRecommendationsForUser('user1');
 
-      expect(result).toEqual(mockRecommendations);
-
+      expect(result).toEqual(mockProducts);
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
         where: {
-          category: {
-            in: mockCategories,
-          },
-          variants: {
-            none: {
-              id: {
-                in: [1], // αλλάξαμε το 1 σε [1]
-              },
-            },
-          },
+          category: { in: ['electronics'] },
+          variants: { none: { id: { in: ['v1'] } } },
         },
-        include: {
-          images: true,
-          reviews: true,
-          variants: true,
-        },
-        orderBy: {
-          reviews: {
-            _count: 'desc',
-          },
-        },
-        take: 10, // και προσθέσαμε το take ώστε να παίρνει 10 προϊόντα
+        include: { images: true, reviews: true, variants: true },
+        orderBy: { reviews: { _count: 'desc' } },
+        take: 10,
       });
     });
   });

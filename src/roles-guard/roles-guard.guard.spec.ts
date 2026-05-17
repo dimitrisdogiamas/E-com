@@ -16,7 +16,7 @@ describe('RolesGuard', () => {
       switchToHttp: jest.fn().mockReturnThis(),
       getRequest: jest.fn().mockReturnValue({
         user: {
-          roles: ['admin'], // User has the required role
+          role: 'admin',
         },
       }),
       getHandler: jest.fn(), //mock handler
@@ -33,7 +33,7 @@ describe('RolesGuard', () => {
       switchToHttp: jest.fn().mockReturnThis(),
       getRequest: jest.fn().mockReturnValue({
         user: {
-          roles: ['user'], // User does not have the required role
+          role: 'user', // User does not have the required role
         },
       }),
       getHandler: jest.fn(),
@@ -51,7 +51,7 @@ describe('RolesGuard', () => {
       switchToHttp: jest.fn().mockReturnThis(),
       getRequest: jest.fn().mockReturnValue({
         user: {
-          roles: ['user'], // User has some role
+          role: 'user', // User has some role
         },
       }),
       getHandler: jest.fn(),

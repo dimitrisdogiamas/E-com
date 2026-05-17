@@ -2,11 +2,9 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ExecutionContext } from '@nestjs/common';
 import { UnauthorizedException } from '@nestjs/common';
-
 describe('JwtAuthGuard', () => {
   let jwtAuthGuard: JwtAuthGuard;
   let mockJwtService: Partial<JwtService>;
-
   beforeEach(() => {
     // Mock the JwtService
     mockJwtService = {
@@ -16,7 +14,11 @@ describe('JwtAuthGuard', () => {
     };
 
     // Create an instance of JwtAuthGuard with the mocked JwtService
-    jwtAuthGuard = new JwtAuthGuard(mockJwtService as JwtService);
+    const mockPrismaService = { user: { findUnique: jest.fn() } };
+    jwtAuthGuard = new JwtAuthGuard(
+      mockJwtService as JwtService,
+      mockPrismaService as any,
+    );
   });
 
   it('should be defined', () => {

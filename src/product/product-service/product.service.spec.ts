@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from './product.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 describe('ProductService', () => {
   let service: ProductService;
   let mockPrismaService: Partial<PrismaService>;
@@ -26,13 +25,6 @@ describe('ProductService', () => {
         count: jest.fn(),
         aggregate: jest.fn(),
         groupBy: jest.fn(),
-        fields: {
-          id: {},
-          name: {},
-          description: {},
-          price: {},
-          category: {},
-        } as Prisma.ProductFieldRefs,
       },
     };
     const module: TestingModule = await Test.createTestingModule({
