@@ -12,14 +12,12 @@ RUN npm ci && npm cache clean --force
 # Copy all source files
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client with placeholder URL (Prisma 7.x resolves env vars eagerly,
+# but prisma generate never connects to the DB — a placeholder is enough)
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
 
 # Build the application
 RUN npm run build
-
-# Generate Prisma client (skip config, just use schema)
-RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npx prisma generate
 
 # Production stage
 FROM node:20.19-alpine AS production
@@ -46,8 +44,5 @@ USER nextjs
 
 EXPOSE 4001
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start the application
 CMD ["node", "dist/src/main.js"]

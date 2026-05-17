@@ -10,6 +10,7 @@ describe('WishlistController', () => {
       providers: [
         {
           provide: WishlistService,
+          
           useValue: {
             addToWishList: jest.fn(),
             removeFromWishList: jest.fn(),
@@ -30,10 +31,10 @@ describe('WishlistController', () => {
     const mockResult = { id: '1', userId: 'user1', productId: 'prod1' };
     (service.addToWishList as jest.Mock).mockResolvedValue(mockResult);
 
-    const result = await controller.addToWishList({
-      userId: 'user1',
-      productId: 'prod1',
-    });
+    const result = await controller.addToWishList(
+      {user: {id: 'user1'}},
+      { productId: 'prod1' },
+    );
     expect(result).toEqual(mockResult);
   });
 
@@ -41,10 +42,10 @@ describe('WishlistController', () => {
     const mockResult = { count: 1 };
     (service.removeFromWishList as jest.Mock).mockResolvedValue(mockResult);
 
-    const result = await controller.removeFromWishList({
-      userId: 'user1',
-      productId: 'prod1',
-    });
+    const result = await controller.removeFromWishList(
+      { user: { id: 'user1' } },
+       'prod1',
+    );
     expect(service.removeFromWishList).toHaveBeenCalledWith('user1', 'prod1');
 
     expect(result).toEqual(mockResult);
