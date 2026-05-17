@@ -2,10 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from './product.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 describe('ProductService', () => {
   let service: ProductService;
-  let mockPrismaService: Partial<PrismaService>;
+  let mockPrismaService: any;
 
   beforeEach(async () => {
     // we need to mock the values and the methods of Prisma Service
@@ -26,13 +25,6 @@ describe('ProductService', () => {
         count: jest.fn(),
         aggregate: jest.fn(),
         groupBy: jest.fn(),
-        fields: {
-          id: {},
-          name: {},
-          description: {},
-          price: {},
-          category: {},
-        } as Prisma.ProductFieldRefs,
       },
     };
     const module: TestingModule = await Test.createTestingModule({
@@ -137,6 +129,25 @@ describe('ProductService', () => {
     //we expect the mockService to have been called
     expect(mockPrismaService.product.findUnique).toHaveBeenCalledWith({
       where: { id: '1' },
+      include: {
+        images: true,
+        variants: {
+          include: {
+            size: true,
+            color: true,
+          },
+        },
+        reviews: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     //then we expect the result

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WishlistController } from './wishlist.controller';
 import { WishlistService } from './wishlist.service';
+import { PrismaService } from '../../prisma/prisma.service';
 describe('WishlistController', () => {
   let controller: WishlistController;
   let service: WishlistService;
@@ -10,17 +11,25 @@ describe('WishlistController', () => {
       providers: [
         {
           provide: WishlistService,
-          
           useValue: {
             addToWishList: jest.fn(),
             removeFromWishList: jest.fn(),
             getWishList: jest.fn(),
           },
         },
+        {
+          provide: PrismaService,
+          useValue: {
+            wishListItem: {
+              create: jest.fn(),
+            },
+          },
+        },
       ],
     }).compile();
 
     controller = module.get<WishlistController>(WishlistController);
+    service = module.get<WishlistService>(WishlistService);
   });
 
   it('should be defined', () => {
@@ -32,7 +41,7 @@ describe('WishlistController', () => {
     (service.addToWishList as jest.Mock).mockResolvedValue(mockResult);
 
     const result = await controller.addToWishList(
-      {user: {id: 'user1'}},
+      { user: { id: 'user1' } },
       { productId: 'prod1' },
     );
     expect(result).toEqual(mockResult);
@@ -44,7 +53,7 @@ describe('WishlistController', () => {
 
     const result = await controller.removeFromWishList(
       { user: { id: 'user1' } },
-       'prod1',
+      'prod1',
     );
     expect(service.removeFromWishList).toHaveBeenCalledWith('user1', 'prod1');
 
@@ -54,7 +63,7 @@ describe('WishlistController', () => {
   it('should get the wishList from the user', async () => {
     const mockItem = [{ id: '1', userId: 'user1', productId: 'prod1' }];
     (service.getWishList as jest.Mock).mockResolvedValue(mockItem);
-    const result = await controller.getWishList({ userId: 'user1' });
+    const result = await controller.getWishList({ user: { id: 'user1' } });
 
     expect(service.getWishList).toHaveBeenCalledWith('user1');
 

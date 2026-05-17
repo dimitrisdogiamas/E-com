@@ -16,6 +16,7 @@ describe('WishlistService', () => {
               create: jest.fn(),
               deleteMany: jest.fn(),
               findMany: jest.fn(),
+              findFirst: jest.fn().mockResolvedValue(null), // mock for checking if item exists
             },
           },
         },
@@ -37,6 +38,13 @@ describe('WishlistService', () => {
 
     expect(prisma.wishListItem.create).toHaveBeenCalledWith({
       data: { userId: 'user1', productId: 'prod1' },
+      include: {
+        product: {
+          include: {
+            images: true,
+          },
+        },
+      },
     });
 
     expect(result).toEqual(mockItem);
@@ -61,7 +69,7 @@ describe('WishlistService', () => {
     const result = await service.getWishList('user1');
     expect(prisma.wishListItem.findMany).toHaveBeenCalledWith({
       where: { userId: 'user1' },
-      include: { product: true },
+      include: { product: { include: { images: true } } },
     });
     expect(result).toEqual(mockItems);
   });

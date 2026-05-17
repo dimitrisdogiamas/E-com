@@ -1,22 +1,35 @@
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
-import { ExecutionContext } from '@nestjs/common';
-import { UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 
 describe('JwtAuthGuard', () => {
   let jwtAuthGuard: JwtAuthGuard;
   let mockJwtService: Partial<JwtService>;
+  let mockPrismaService: { user: { findUnique: jest.Mock } };
+
+  const mockUser = {
+    id: 'user-1',
+    email: 'test@example.com',
+    role: 'user',
+  };
 
   beforeEach(() => {
-    // Mock the JwtService
     mockJwtService = {
       verifyAsync: jest
         .fn()
-        .mockResolvedValue({ id: 1, email: 'test@example.com' }), // Mock a valid token payload
+        .mockResolvedValue({ sub: 'user-1', email: 'test@example.com' }),
     };
 
-    // Create an instance of JwtAuthGuard with the mocked JwtService
-    jwtAuthGuard = new JwtAuthGuard(mockJwtService as JwtService);
+    mockPrismaService = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue(mockUser),
+      },
+    };
+
+    jwtAuthGuard = new JwtAuthGuard(
+      mockJwtService as JwtService,
+      mockPrismaService as any,
+    );
   });
 
   it('should be defined', () => {
@@ -35,8 +48,12 @@ describe('JwtAuthGuard', () => {
     } as unknown as ExecutionContext;
 
     const result = await jwtAuthGuard.canActivate(mockExecutionContext);
-    expect(result).toBe(true); // Expect the guard to allow access
+    expect(result).toBe(true);
     expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('valid-token');
+    expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      select: { id: true, email: true, role: true },
+    });
   });
 
   it('should throw an error with an invalid token', async () => {
@@ -56,7 +73,7 @@ describe('JwtAuthGuard', () => {
 
     await expect(
       jwtAuthGuard.canActivate(mockExecutionContext),
-    ).rejects.toThrow('Invalid token');
+    ).rejects.toThrow(UnauthorizedException);
     expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('invalid-token');
   });
 
@@ -69,7 +86,7 @@ describe('JwtAuthGuard', () => {
           headers: {},
           cookies: { jwt: mockToken },
           user: null,
-        } as unknown as ExecutionContext),
+        }),
         getResponse: jest.fn(),
         getNext: jest.fn(),
       }),
@@ -79,6 +96,7 @@ describe('JwtAuthGuard', () => {
       mockContext as ExecutionContext,
     );
     expect(result).toBe(true);
+    expect(mockJwtService.verifyAsync).toHaveBeenCalledWith(mockToken);
   });
 
   it('should throw UnauthorizedException if token is missing', async () => {
