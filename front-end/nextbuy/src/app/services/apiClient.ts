@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { API_CONFIG } from '../config/api';
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001', // Backend URL
+  baseURL: API_CONFIG.BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

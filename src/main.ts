@@ -28,11 +28,8 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      // Allow any .vercel.app or .railway.app domains in production
-      if (
-        process.env.NODE_ENV === 'production' &&
-        (origin.endsWith('.vercel.app') || origin.endsWith('.railway.app'))
-      ) {
+      // Allow Vercel (production + preview) and Railway frontend deployments
+      if (origin.endsWith('.vercel.app') || origin.endsWith('.railway.app')) {
         return callback(null, true);
       }
 
@@ -63,7 +60,7 @@ async function bootstrap() {
 
   // Use PORT environment variable or default to 4001
   const port = process.env.PORT || 4001;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`🚀 NextBuy Backend running on http://localhost:${port}`);
   console.log('📁 Static files served from /uploads/');
 }
