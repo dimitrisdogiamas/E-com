@@ -23,13 +23,22 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: [
-      'http://localhost:3000',
-      'https://localhost:3000',
-      'http://127.0.0.1:3000',
-      process.env.FRONTEND_URL,
-      'https://nextbuy-frontend.railway.app',
-    ].filter(Boolean), // Remove undefined values
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      if (!origin) return callback(null, true);
+      if (
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.railway.app') ||
+        origin === process.env.FRONTEND_URL
+      ) {
+        return callback(null, true);
+      }
+      callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true,
     methods: ['GET', 'POST'],
   },
